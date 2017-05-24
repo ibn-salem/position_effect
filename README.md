@@ -79,7 +79,11 @@ perl enh_promoter_disruption_checker_DGAP.pl \
 **Example:**
 
 ```
-perl enh_promoter_disruption_checker_DGAP.pl -f non_coding_DGAP_positions.bed -d genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 -a 3000000 -o DHS_promoter_broken_DGAP.txt
+perl enh_promoter_disruption_checker_DGAP.pl \
+  -f non_coding_DGAP_positions.bed \
+  -d genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 \
+  -a 3000000 \
+  -o DHS_promoter_broken_DGAP.txt
 ```
 
 This script will output the DHS enhancer/promoter contacts affected by the rearrangement breakpoints as well as a summary of the number of the disrupted contacts per analyzed case. The file used in this analysis was obtained from Andresson et al., 2014. The first file will be used for building the final analysis table for the analyzed regions (see Step 3).
