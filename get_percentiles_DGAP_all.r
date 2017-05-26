@@ -4,7 +4,8 @@
 ### Output: file with percentiles for the analyzed pheno/maxphenomatch scores per gene.
 ### how to run: Rscript --vanilla get_percentiles_DGAP_all.r v07_breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes_formatted.txt > percentiles_6Mb_pheno_maxpheno.txt
 ########################################################################################################################
-library("lattice")
+require(lattice)
+require(stringr) # for str_split_fixed()
 
 #arguments: 
 args <- commandArgs(trailingOnly = TRUE)
@@ -22,7 +23,10 @@ rm(args)
 
 #remember to delete the _A and _B from the file before processing
 
-allgene <- read.table(file = allgenes, header = TRUE)
+allgene <- read.table(file = allgenes, header = TRUE, comment.char = "")
+
+# delete the _A and _B from name column
+allgene$name <- str_split_fixed(allgene$name, '_', 2)[, 1]
 
 for (i in 1:nrow(allgene)){
 
