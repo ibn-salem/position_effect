@@ -89,6 +89,93 @@ perl enh_promoter_disruption_checker_DGAP.pl \
 This script will output the DHS enhancer/promoter contacts affected by the rearrangement breakpoints as well as a summary of the number of the disrupted contacts per analyzed case. The file used in this analysis was obtained from Andresson et al., 2014. The first file will be used for building the final analysis table for the analyzed regions (see Step 3).
 
 ## STEP 3 
+Here phenomatch scores are calculated for genes located close to rearrangment breakpoints.
+
+### a) Combine breakpoints and phenotype annotation in one file
+
+```
+Rscript combine_breakpoints_and_phenotypes.R \
+  SUBJECT_TO_PHENOTYPES \
+  BREAKPOINTS_BED \
+  OUTPUT_FILE
+```
+This scripts takes two files as input:
+`SUBJECT_TO_PHENOTYPES` is a tab delimited file with two columns and column headers:
+
++ **ID** the subject ID
++ **HPO** a single HPO term (e.g. HP:0000526)
+
+Subjects with more than one HPO annotation have multiple lines in the file with the same ID in the first column
+
+The second input file `BREAKPOINTS_BED` is a BED file wiht breakpoint locations.
+In the fourth column should contain the patient ID with additinaol breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
+
+The output file `OUTPUT_FILE` contains all breakpoints with additional columns of `,`-separated list of phenotypes.
+**Example:**
+
+```
+Rscript combine_breakpoints_and_phenotypes.R \
+  data/HPO_distal_cases.txt \
+  non_coding_DGAP_positions.bed \
+  breakpoint_window_with_HPO.bed
+```
+
+### b) Compute phenomatch scores
+
+```
+java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
+                  -i INPUT_FILE \
+                  -d DOMAINS \
+                  -g GENES \
+                  -O PHENOTYPE_ONTOLOGY
+                  -a ANNOTATION_FILE -o OUTPUT_FILE \
+                  -e ENHANCERS \
+                  -o OUTPUT_FILE
+
+```
+
+Use `-h` option for more usage information and other options including permutation anlaysis.
+
+
+**Example:**
+
+```
+java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
+    -i breakpoint_window_with_HPO.bed \
+    -d hESC_hg37_domains.bed  \
+    -g knownGene.txt.entrez_id.tab.unique \
+    -O data/hp.obo \
+    -a ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt \
+    -e Fetal_Brain.tab \
+    -o breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out
+```
+
+The HPO files `hpo.obo`and `ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt` can be downloaded from the following URLs:
+
++ http://purl.obolibrary.org/obo/hp.obo
++ http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt
+
+
+## STEP 4:
+You can calculate the percentile for the phenomatch and max_phenomatch scores by using the R script get_percentiles_DGAP_all.r
+
+You can run the escript with:
+
+```
+Rscript --vanilla get_percentiles_DGAP_all.r PHENO_FILE > OUTPUT_FILENAME
+```
+
+**Example: **
+```
+Rscript --vanilla get_percentiles_DGAP_all.r \
+  breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes_formatted.txt \
+  > percentiles_6Mb_pheno_maxpheno.txt
+```
+
+Remember to delete the _A and _B from the input file before processing.
+
+
+## STEP 5 
 Summarize results
 
 ```
@@ -163,22 +250,4 @@ Finally, after adding these 0 or 1 selection values to the haplo, triplo, and ph
 
 You can replace the haploinsufficiency file (ClinGen_haploinsufficiency_gene.bed, ClinGen), the triplosensitivity file (ClinGen_triplosensitivity_gene.bed, ClinGen) and the HiC domains file (hESC_hg37_domains.bed, Dixon et al., 2012) with more recent versions or other custom files as long as the column structure is maintained.
 
-## EXTRAS:
-
-You can calculate the percentile for the phenomatch and max_phenomatch scores by using the R script get_percentiles_DGAP_all.r
-
-You can run the escript with:
-
-```
-Rscript --vanilla get_percentiles_DGAP_all.r PHENO_FILE > OUTPUT_FILENAME
-```
-
-**Example: **
-```
-Rscript --vanilla get_percentiles_DGAP_all.r \
-  v07_breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes_formatted.txt \
-  > percentiles_6Mb_pheno_maxpheno.txt
-```
-
-Remember to delete the _A and _B from the input file before processing.
 
