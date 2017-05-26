@@ -86,7 +86,7 @@ perl enh_promoter_disruption_checker_DGAP.pl \
   -o DHS_promoter_broken_DGAP.txt
 ```
 
-This script will output the DHS enhancer/promoter contacts affected by the rearrangement breakpoints as well as a summary of the number of the disrupted contacts per analyzed case. The file used in this analysis was obtained from Andresson et al., 2014. The first file will be used for building the final analysis table for the analyzed regions (see Step 3).
+This script will output the DHS enhancer/promoter contacts affected by the rearrangement breakpoints as well as a summary of the number of the disrupted contacts per analyzed case. The file used in this analysis was obtained from Andresson et al., 2014. The first file will be used for building the final analysis table for the analyzed regions (see Step 4).
 
 ## STEP 3 
 Here phenomatch scores are calculated for genes located close to rearrangment breakpoints.
@@ -110,12 +110,13 @@ Subjects with more than one HPO annotation have multiple lines in the file with 
 The second input file `BREAKPOINTS_BED` is a BED file wiht breakpoint locations.
 In the fourth column should contain the patient ID with additinaol breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
 
-The output file `OUTPUT_FILE` contains all breakpoints with additional columns of `,`-separated list of phenotypes.
+The output file `OUTPUT_FILE` contains all breakpoints with an additional column with a comma-separated list of phenotypes.
+
 **Example:**
 
 ```
 Rscript combine_breakpoints_and_phenotypes.R \
-  data/HPO_distal_cases.txt \
+  HPO_distal_cases.txt \
   non_coding_DGAP_positions.bed \
   breakpoint_window_with_HPO.bed
 ```
@@ -135,17 +136,17 @@ java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
 ```
 
 Use `-h` option for more usage information and other options including permutation anlaysis.
-
+The calculation of phenomatch score is described in [Ibn-Salem et al. 2014](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1) and the source code of the topodombar tool is available [here](https://github.com/charite/topodombar/tree/java-implementation).
 
 **Example:**
 
 ```
 java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
-    -i breakpoint_window_with_HPO.bed \
+    -i breakpoint_window_with_HPO.bed.6MB_win.bed \
     -d hESC_hg37_domains.bed  \
     -g knownGene.txt.entrez_id.tab.unique \
-    -O data/hp.obo \
-    -a ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt \
+    -O hp.obo \
+    -a ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt \
     -e Fetal_Brain.tab \
     -o breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out
 ```
@@ -153,26 +154,25 @@ java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
 The HPO files `hpo.obo`and `ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt` can be downloaded from the following URLs:
 
 + http://purl.obolibrary.org/obo/hp.obo
-+ http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt
++ http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt
 
+The tool will create several output files with the same prefix. The ouput file `breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt` contains phenomatch scores.
 
 ## STEP 4:
 You can calculate the percentile for the phenomatch and max_phenomatch scores by using the R script get_percentiles_DGAP_all.r
 
-You can run the escript with:
+You can run the script with:
 
 ```
 Rscript --vanilla get_percentiles_DGAP_all.r PHENO_FILE > OUTPUT_FILENAME
 ```
 
-**Example: **
+**Example:**
 ```
 Rscript --vanilla get_percentiles_DGAP_all.r \
-  breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes_formatted.txt \
+  breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt \
   > percentiles_6Mb_pheno_maxpheno.txt
 ```
-
-Remember to delete the _A and _B from the input file before processing.
 
 
 ## STEP 5 
@@ -197,13 +197,11 @@ perl dgap_final_table_maker.pl \
   -d DHS_promoter_broken_breakpDGAP.txt \
   -h ClinGen_haploinsufficiency_gene.bed \
   -t ClinGen_triplosensitivity_gene.bed \
-  -m percentiles_phenomatch.txt \
+  -m percentiles_6Mb_pheno_maxpheno.txt \
   -o DGAP_table_summary.txt
 ```
 
-The TAD_ANALYSIS_FEATURES_FILE is the HI_list_DGAP.txt file from step 1. The DHS_ENH_PROMOTER_DISRUPTED_CONTACTS_FILE is the output file of step 2 (not the summary!). Running this script will produce an additional section from the features analyzed in step 1, and analyzes the genes' inclusion in the 6Mb (or other sized) windows, the 2Mb window, the gene inclusion within the breakpoint TAD, whether or not predicted enh/promoter contacts (from Anderson et al) were disrupted for the gene, and finally a summary of the genes phenomatch and max_phenomatch scores with their corresponding percentile values within the analyzed dataset*. Values of 0 and 1 indicate inclusion within the analyzed regions (6Mb, 2Mb, TADs) or presence of disrupted contacts (enh/promoter).
-
-*Please note that the included phenomatch scores file correspond to the non-coding DGAP dataset ONLY. If you want to analyze your own set of subject phenotypes, Jonas Ibn-Salem is currently writing a paper and creating a software that performs this analysis. If you want to urgently analyze your data or have a collaboration with him, please contact Jonas for the phenomatch analysis of your dataset.  
+The TAD_ANALYSIS_FEATURES_FILE is the HI_list_DGAP.txt file from step 1. The DHS_ENH_PROMOTER_DISRUPTED_CONTACTS_FILE is the output file of step 2 (not the summary!). Running this script will produce an additional section from the features analyzed in step 1, and analyzes the genes' inclusion in the 6Mb (or other sized) windows, the 2Mb window, the gene inclusion within the breakpoint TAD, whether or not predicted enh/promoter contacts (from Anderson et al) were disrupted for the gene, and finally a summary of the genes phenomatch and max_phenomatch scores with their corresponding percentile values within the analyzed dataset (output of step 4). Values of 0 and 1 indicate inclusion within the analyzed regions (6Mb, 2Mb, TADs) or presence of disrupted contacts (enh/promoter).
 
 The output file has the following columns:
 
