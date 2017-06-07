@@ -129,7 +129,7 @@ java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
                   -d DOMAINS \
                   -g GENES \
                   -O PHENOTYPE_ONTOLOGY
-                  -a ANNOTATION_FILE -o OUTPUT_FILE \
+                  -a ANNOTATION_FILE \
                   -e ENHANCERS \
                   -o OUTPUT_FILE
 
