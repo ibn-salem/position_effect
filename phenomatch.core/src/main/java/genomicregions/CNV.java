@@ -505,7 +505,6 @@ public class CNV extends GenomicElement {
                 
                 ArrayList<TermPair> termMatching = phenotypeData.phenoMatchScoreWithMatching(this.phenotypes, g);
 
-//                double geneScore = phenotypeData.phenoMatchScore(this.phenotypes, g);
                 double maxGeneScore = 0.0;
                 double sumGeneScore = 0.0;
                 String maxPatientMatchTerms = "";

@@ -24,16 +24,14 @@ public class PhenomatchCMD {
             Map<String, Object> argMap = ArgumentParser.parseCommnadLineArguments(args);
             
             // run Topodombar tool with arguments:
-            Phenomatch topodombar = new Phenomatch(argMap);
+            Phenomatch phenomatch = new Phenomatch(argMap);
             
-            topodombar.runAnalysis();
+            phenomatch.runAnalysis();
             
-            topodombar.writeOutput();
-            
-            topodombar.writeGeneOutput();
+            phenomatch.writeGeneOutput();
 
             // run permutaion analysisi to get significance
-            topodombar.runPermutations();
+            phenomatch.runPermutations();
             
             
         }
