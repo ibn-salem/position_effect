@@ -139,62 +139,6 @@ public class AnnotateCNVs {
         }
     }
     
-    /**
-     * Compute the phenogram score for genes in the left and right adjacent regions.
-     * It writes the memeber variables {@link CNVleftAdjacentPhenogramScore} and 
-     * {@link CNVrightAdjacentPhenogramScore} in each {@link CNV} object
-     * Note, this function assumes that the CNVs are annotated adjacent genes by 
-     * the function {@link annotateAdjacentGenes}.
-     * 
-     * @param cnvs CNVs for which the phenogram score should be calculated.
-     * @param phenotypeData the phenotype ontology
-     */
-    public static void adjacentPhenogramScore(GenomicSet<CNV> cnvs, PhenotypeData phenotypeData){
-        
-        for (CNV cnv: cnvs.values()){
-        
-            // left adjacent PhenogramScore:
-            cnv.setLeftAdjacentPhenogramScore( 
-                phenotypeData.phenoGramScore( cnv.getPhenotypes(), cnv.getGenesInLeftRegion()) 
-            );
-
-            // right adjacent PhenogramScore:
-            cnv.setRightAdjacentPhenogramScore(
-               phenotypeData.phenoGramScore( cnv.getPhenotypes(), cnv.getGenesInRightRegion())
-            );
-        }
-    }
-    
-    /**
-     * Annotates all input CNVs with enhancers in the left and right adjacent regions of the CNV.
-     * For each {@link CNV} object the variable {@link CNV.enhancersInLeftRegion} 
-     * and {@link CNV.enhancersInRightRegion} is filled with a 
-     * {@link GenomicSet} of {@link GenomicElemnt} objects representing the enhancers.
-     * Note, his function assumes pre-defined the the adjacent regions 
-     * (e.g by the function {@link defineAdjacentRegionsByDomains}).  
-     * Note, this function requires that an enhancer lies completely in the adjacent regions,
-     * that is the adjacent regions overlaps completely the entire enhancer.
-     * 
-     * @param cnvs CNVs that should be annotated
-     * @param enhancers Set of enhancers
-     */    
-    public static void annotateAdjacentEnhancers(GenomicSet<CNV> cnvs, GenomicSet<GenomicElement> enhancers){
-
-        // iterate over all input CNVs:
-        for (CNV cnv : cnvs.values()){
-
-            // get all enhancers in the left adjacent regions
-            GenomicSet<GenomicElement> leftEnhancers = enhancers.completeOverlap(cnv.getLeftAdjacentRegion());
-            cnv.setEnhancersInLeftRegion( leftEnhancers );
-
-            // get all enhancers in the right adjacent regions
-            GenomicSet<GenomicElement> rightEnhancers = enhancers.completeOverlap(cnv.getRightAdjacentRegion());
-            cnv.setEnhancersInRightRegion( rightEnhancers );
-            
-        }
-        
-    }
-    
 
     /**
      * This function defines the overlapped inner-domain regions by the CNV.
