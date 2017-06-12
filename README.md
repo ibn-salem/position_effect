@@ -248,4 +248,3 @@ Finally, after adding these 0 or 1 selection values to the haplo, triplo, and ph
 
 You can replace the haploinsufficiency file (ClinGen_haploinsufficiency_gene.bed, ClinGen), the triplosensitivity file (ClinGen_triplosensitivity_gene.bed, ClinGen) and the HiC domains file (hESC_hg37_domains.bed, Dixon et al., 2012) with more recent versions or other custom files as long as the column structure is maintained.
 
-
