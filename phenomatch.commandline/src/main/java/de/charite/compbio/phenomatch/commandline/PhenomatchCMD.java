@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.topodombar.commandline;
+package de.charite.compbio.phenomatch.commandline;
 
 import commandline.ArgumentParser;
-import de.charite.compbio.topodombar.core.Topodombar;
+import de.charite.compbio.phenomatch.core.Phenomatch;
 import java.io.IOException;
 import java.util.Map;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -16,7 +16,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
  *
  * @author jonas
  */
-public class TopodombarCMD {
+public class PhenomatchCMD {
     
         public static void main(String[] args) throws ArgumentParserException, IOException{
             
@@ -24,7 +24,7 @@ public class TopodombarCMD {
             Map<String, Object> argMap = ArgumentParser.parseCommnadLineArguments(args);
             
             // run Topodombar tool with arguments:
-            Topodombar topodombar = new Topodombar(argMap);
+            Phenomatch topodombar = new Phenomatch(argMap);
             
             topodombar.runAnalysis();
             

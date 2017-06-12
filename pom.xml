@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.charite.compbio</groupId>
-    <artifactId>topodombar</artifactId>
+    <artifactId>phenomatch</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <!--<packaging>jar</packaging>-->
     <packaging>pom</packaging>
@@ -12,8 +12,8 @@
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <description>
-        Topological domain barrier disruption: 
-        Phenotypic analysis of microdeletions and toplogical chromosome domain boundaries
+        Similarity between phenotypes observed in individuals and phenotypes 
+        annotated to genes.
     </description>
 
     <repositories>
@@ -43,9 +43,8 @@
     </build>
             
     <modules>
-        <module>topodombar.core</module>
-        <module>topodombar.commandline</module>
-        <module>topodombar.gui</module>
+        <module>phenomatch.core</module>
+        <module>phenomatch.commandline</module>
     </modules>
     
 </project>

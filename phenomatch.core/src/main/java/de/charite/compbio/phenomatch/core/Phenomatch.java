@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.topodombar.core;
+package de.charite.compbio.phenomatch.core;
 
 import annotation.AnnotateCNVs;
 import static annotation.AnnotateGenes.addGeneSymbol;
@@ -44,7 +44,7 @@ import phenotypeontology.TargetTerm;
  * 
  * @author Jonas Ibn-Salem <ibnsalem@molgen.mpg.de>
  */
-public class Topodombar {
+public class Phenomatch {
     
         
     /**
@@ -99,7 +99,7 @@ public class Topodombar {
      * @param argMap a {@link Map} holding the input data and parameters
      * @throws IOException if files cannot be read or write
      */
-    public Topodombar(Map<String, Object> argMap) throws IOException{
+    public Phenomatch(Map<String, Object> argMap) throws IOException{
         
         // get the individual values
         String ontologyPath = (String) argMap.get("phenotype_ontology");
@@ -466,7 +466,7 @@ public class Topodombar {
             try {
                 this.genes = new TabFileParser(this.genesPath).parseGeneWithTerms(this.phenotypeData);
             } catch (IOException ex) {
-                Logger.getLogger(Topodombar.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Phenomatch.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             // rerun the whole analysis
