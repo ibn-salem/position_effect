@@ -8,14 +8,11 @@ package de.charite.compbio.phenomatch.core;
 
 import annotation.AnnotateCNVs;
 import static annotation.AnnotateGenes.addGeneSymbol;
-import annotation.InterpretCNVs;
 import genomicregions.CNV;
 import genomicregions.Gene;
 import genomicregions.GenomicElement;
 import genomicregions.GenomicSet;
-import io.CountStatistics;
 import io.GeneSymbolParser;
-import io.SimpleStatsWriter;
 import io.TabFileParser;
 import io.TabFileWriter;
 import java.io.IOException;
@@ -247,38 +244,6 @@ public class Phenomatch {
                         
     }
     
-    /**
-     * helper function to initialize an empty map to hold effect mechanism counts
-     * for all permutations. All values are initialized to zero.
-     * 
-     * @param permutations number of permutations
-     * @return an initialized map with all possible effect mechanisms
-     */
-    private HashMap<String, HashMap<String, Integer []>> initializePermutationCounts(Integer permutations){
-
-        // initialize count map for all calsses, all effects, and all permutations
-        HashMap<String, HashMap<String, Integer []>> permutCounts = new HashMap<String, HashMap<String, Integer []>>();
-        
-        for (String effectClass: CNV.getEffectMechanismClasses()){
-            
-            // initialize count map for all annotaions
-            permutCounts.put(effectClass, new HashMap<String, Integer []>());
-            
-            for (String effect : CNV.possibleEeffectAnnotations(effectClass)){
-                
-                // initialize counts empty count vector for the effect
-                permutCounts.get(effectClass).put(effect, new Integer [permutations]);
-                
-                // fill array with zeros:
-                Arrays.fill(permutCounts.get(effectClass).get(effect), 0);                
-                
-            }
-        
-        }
-
-        return permutCounts;
-        
-    }
     
     /**
      * writes the cnvs and each ovelrapped gene per line with pheno match score 
@@ -316,8 +281,7 @@ public class Phenomatch {
 
         // sort CNVs by there effect mechanism class
         ArrayList<CNV> sortedCNVs = new ArrayList<>(cnvs.values());
-        Collections.sort( sortedCNVs, CNV.EFFECTMECHANISM_TDBD_ORDER);
-
+        
         for (CNV c : sortedCNVs){
             outLines.addAll(c.getOverlappedGenesOutputLine(phenotypeData, c.getGenesInOverlap()));
         }
@@ -356,7 +320,6 @@ public class Phenomatch {
 
         // sort CNVs by there effect mechanism class
         ArrayList<CNV> sortedCNVs = new ArrayList<CNV>(cnvs.values());
-        Collections.sort( sortedCNVs, CNV.EFFECTMECHANISM_TDBD_ORDER);
 
         for (CNV c : sortedCNVs){
             outLines.addAll(c.getOverlappedGenesOutputLine(phenotypeData, c.getGenesInOverlapTADs()));

@@ -27,9 +27,6 @@
 package genomicregions;
    
 import annotation.AnnotateCNVs;
-import annotation.EffectAnnotation;
-import annotation.GeneDosage;
-import annotation.InteractionChange;
 import io.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,38 +111,6 @@ public class CNV extends GenomicElement {
     private Double rightAdjacentPhenogramScore;
     
     /**
-     * Holds the final effect mechanism annotations. For each effect class (like 
-     * TDBD, EA, or EAlowG), its holds the mechanism that best explains the patients
-     * phenotype, based on the genomic context and phenotypic similartites.<br><br>
-     * The key word "TDBD" indicator that this CNV is a topological domain boundary disruption (TDBD),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * "EA"  indicator that this CNV corresponds to the category enhancer adoption (EA),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * "EAlowG" indicator that this CNV corresponds to the category enhancer adoption 
-     * with low score in overlap (EAlowG), gene dosage effect (GDE), both (Mixed)
-     * or not explainable (NoData).
-     */
-    private HashMap<String, String> effectMechanism;
-
-    /**
-     * A list of {@link GeneDosage} {@link EffectAnnotations} that has this CNV 
-     * on phenotypically relevant genes.
-     */
-    private ArrayList<GeneDosage> geneDosageAnnotations;
-
-    /**
-     * A list of {@link InteractionChange} {@link EffectAnnotations} that has this CNV 
-     * on phenotypically relevant genes.
-     */
-    private ArrayList<InteractionChange> interactionChangeAnnotations;
-    
-    /**
-     * possible effect mechanism classes used as key in the {@link effectMechanism} map.
-     */
-    private final static String [] effectMechanismClasses 
-            = new String [] {"TDBD", "newTDBD", "EA", "EAlowG", "TanDupEA", "InvEA"};
-
-    /**
      * Possible CNV effect mechanism classes maped to the possible effect annotations.
      */
     private final  static HashMap<String, String []> effectMechansim2effects;
@@ -164,37 +129,7 @@ public class CNV extends GenomicElement {
         effectMechansim2effects.put("InvER", new String [] {"InvertedEnhancer", "InvertedGene", "NoInvER", "NA"});    
         effectMechansim2effects.put("TanDupEA", new String [] {"TanDupEA", "onlyGDE", "NoData", "NA"});    
     }
-    /**
-     * A Comparator that compares {@link CVN} objects by there 
-     * TDBD effect mechanism annotation.
-     * This comparator can be used to sort CNVs in the output file.
-     */
-    public static final Comparator<CNV> EFFECTMECHANISM_TDBD_ORDER = new CNV.effectMechanismTdbdComparator();
-
-    /**
-     * possible effect mechanism classes used as key in the {@link effectMechanism} map.
-     * @return the effectMechanismClasses
-     */
-    public static String[] getEffectMechanismClasses() {
-        return effectMechanismClasses;
-    }
-
-    /**
-     * Return the the possible annotations for a given effect mechanism class.
-     * 
-     * @param effectMechanismClass mechanism class for which the possible annotations should be returned
-     * @return the the possible annotations for a given effect mechanism class
-     */
-    public static String [] possibleEeffectAnnotations(String effectMechanismClass) {
-        //  check if input is a effect mechanism class:
-        // TODO use Enums for the classes an remove the check
-        if (! Arrays.asList(CNV.effectMechanismClasses).contains(effectMechanismClass)){
-            System.err.printf("[ERROR] The given String '%s' is not a valid effect mechanism class", effectMechanismClass);
-            System.exit(1);
-        }
-        return effectMechansim2effects.get(effectMechanismClass);
-    }
-    
+   
     /**
      * Constructor for CNV object.
      * Construct a {@link GenomicElement} and sets all {@link CNV} specific 
@@ -229,16 +164,6 @@ public class CNV extends GenomicElement {
         this.enhancersInLeftRegion = new GenomicSet<GenomicElement>();
         this.enhancersInRightRegion = new GenomicSet<GenomicElement>();
         
-        // set default dot "." for effect mechanism class annotations
-        this.effectMechanism = new HashMap<String, String>();
-        for (String mechanismClass : CNV.effectMechanismClasses){
-            this.effectMechanism.put(mechanismClass, ".");
-        }
-        
-        // set empty list for {@link GeneDosage} and {@link InteractionChange} effect annotations
-        this.geneDosageAnnotations = new ArrayList<GeneDosage>();
-        this.interactionChangeAnnotations = new ArrayList<InteractionChange>();
-
     }
     
     /**
@@ -280,46 +205,9 @@ public class CNV extends GenomicElement {
         this.enhancersInLeftRegion = new GenomicSet<GenomicElement>();
         this.enhancersInRightRegion = new GenomicSet<GenomicElement>();        
 
-        // set default dot "." for effect mechanism class annotations
-        this.effectMechanism = new HashMap<String, String>();
-        for (String mechanismClass : CNV.effectMechanismClasses){
-            this.effectMechanism.put(mechanismClass, ".");
-        }
-
-        // set empty list for {@link GeneDosage} and {@link InteractionChange} effect annotations
-        this.geneDosageAnnotations = new ArrayList<GeneDosage>();
-        this.interactionChangeAnnotations = new ArrayList<InteractionChange>();
     }
     
-    /**
-     * Create a header line as TAB-separated string with all column identifiers 
-     * for the output file.
-     * 
-     * @return output file header as TAB separated column descriptions
-     */
-    public static String getHeaderLine(){
-        
-        String [] cnvColumns = new String[]{
-                    "#chr",
-                    "start",
-                    "end",
-                    "name",
-                    "type", 
-                    "phenotypes", 
-                    "targetTerm",
-                    "boundaryOverlap",
-                    "overlapGenes",
-                    "overlapScore",
-                    "leftAdjacentGenes",
-                    "leftAdjacentScore",
-                    "rightAdjacentGenes",
-                    "rightAdjacentScore",
-                    "leftAdjacentEnhancers",
-                    "rightAdjacentEnhancers",
-                };
-        // add the effect mechanism columns and return a TAB-separated string.
-        return StringUtils.join(ArrayUtils.addAll(cnvColumns, CNV.getEffectMechanismClasses()), '\t');
-    }
+
     /**
      * Create a header line as TAB-separated string with all column identifiers 
      * for the simple output file format.
@@ -340,134 +228,6 @@ public class CNV extends GenomicElement {
                 };
         // add the effect mechanism columns and return a TAB-separated string.
         return StringUtils.join(cnvColumns, '\t');
-    }
-    
-    /**
-     * This function constructs {@link String} that represents an output line
-     * for a TAB separated file like BED files.
-     * 
-     * @return a TAB-separated output line to write BED like files.
-     */
-    @Override
-    public String toOutputLine(){
-        
-        //convert phenotpye terms to Strings
-        HashSet<String> phenotypesIDs = new HashSet<String>();
-        for (Term t : this.phenotypes){
-            phenotypesIDs.add(t.getIDAsString()); 
-        }
-        
-        // For columns with multiple elements, separate them by semiclon ';'
-        String phenotypeCol = StringUtils.join(phenotypesIDs, ';');
-        String boundaryOverlapCol = this.boundaryOverlap.allNamesAsString();
-        String overlapPhenogramScoreStr = (this.overlapPhenogramScore != -1.0) ? this.overlapPhenogramScore.toString() : ".";
-        String leftAdjacentPhenogramScoreStr = (this.leftAdjacentPhenogramScore != -1.0) ? this.leftAdjacentPhenogramScore.toString() : ".";
-        String rightAdjacentPhenogramScoreStr = (this.rightAdjacentPhenogramScore != -1.0) ? this.rightAdjacentPhenogramScore.toString() : ".";
-        
-        // return generic line (chr, start, end, name) and the additional specific columns:
-        return super.toOutputLine()
-            + "\t" 
-            + StringUtils.join(new String[]{
-                this.type, 
-                phenotypeCol, this.targetTerm.getIDAsString(),
-                Integer.toString(this.boundaryOverlap.size()),
-                this.genesInOverlap.allNamesAsString(),
-                overlapPhenogramScoreStr,
-                this.genesInLeftRegion.allNamesAsString(),
-                leftAdjacentPhenogramScoreStr,
-                this.genesInRightRegion.allNamesAsString(),
-                rightAdjacentPhenogramScoreStr,
-                this.enhancersInLeftRegion.allNamesAsString(),
-                this.enhancersInRightRegion.allNamesAsString(), 
-                this.effectMechanism.get("TDBD")
-            }, '\t');
-            
-    }
-    
-    /**
-     * This function constructs {@link String} that represents an output line
-     * for a TAB separated file like BED files.
-     * 
-     * @param phenotypeData a {@link PhenotypeData} object to calculate phenoMatch scores
-     * @return a TAB-separated output line to write BED like files.
-     */
-    public String getOutputLineWithRelevantGenes(PhenotypeData phenotypeData){
-        
-        
-        //convert phenotpye terms to Strings
-        HashSet<String> phenotypesIDs = new HashSet<String>();
-        for (Term t : this.phenotypes){
-            phenotypesIDs.add(t.getIDAsString()); 
-        }
-        
-        // For columns with multiple elements, separate them by semiclon ';'
-        String phenotypeCol = StringUtils.join(phenotypesIDs, ';');
-        String boundaryOverlapCol = this.boundaryOverlap.allNamesAsString();
-        String overlapPhenogramScoreStr = (this.overlapPhenogramScore != -1.0) ? Utils.roundToString(this.overlapPhenogramScore) : ".";
-        String leftAdjacentPhenogramScoreStr = (this.leftAdjacentPhenogramScore != -1.0) ? Utils.roundToString(this.leftAdjacentPhenogramScore) : ".";
-        String rightAdjacentPhenogramScoreStr = (this.rightAdjacentPhenogramScore != -1.0) ? Utils.roundToString(this.rightAdjacentPhenogramScore) : ".";
-        
-        // get GeneSymbol and score for all 
-        ArrayList<String> overlapTargetGenes = new ArrayList<String>();
-        for (Gene g : this.genesInOverlap.values()){
-            double geneScore = phenotypeData.phenoMatchScore(this.phenotypes, g);
-            
-            // only if the gene is associated with phenotype from the patient
-            // (that is if phenomatch score is > 0), add it to the output set.
-            if (geneScore > 0){
-                overlapTargetGenes.add( g.getSymbol() + ":" + Utils.roundToString(geneScore));
-            }
-        }
-        
-        ArrayList<String> leftTargetGenes = new ArrayList<String>();
-        for (Gene g : this.genesInLeftRegion.values()){
-            double geneScore = phenotypeData.phenoMatchScore(this.phenotypes, g);
-            
-            // only if the gene is associated with phenotype from the patient
-            // (that is if phenomatch score is > 0), add it to the output set.
-            if (geneScore > 0){
-                leftTargetGenes.add( g.getSymbol() + ":" + Utils.roundToString(geneScore)); 
-            }
-        }
-        
-        ArrayList<String> rightTargetGenes = new ArrayList<String>();
-        for (Gene g : this.genesInRightRegion.values()){
-            double geneScore = phenotypeData.phenoMatchScore(this.phenotypes, g);
-            
-            // only if the gene is associated with phenotype from the patient
-            // (that is if phenomatch score is > 0), add it to the output set.
-            if (geneScore > 0){
-                rightTargetGenes.add( g.getSymbol() + ":" + Utils.roundToString(geneScore)); 
-            }
-        }
-
-        // put together all CNV specific annotations
-        String [] cnvAnnotations = new String[]{
-                this.type, 
-                phenotypeCol, this.targetTerm.getIDAsString(),
-                Integer.toString(this.boundaryOverlap.size()),
-                overlapTargetGenes.isEmpty() ? "." : StringUtils.join(overlapTargetGenes,';'),
-                overlapPhenogramScoreStr,
-                leftTargetGenes.isEmpty() ? "." : StringUtils.join(leftTargetGenes, ';') ,
-                leftAdjacentPhenogramScoreStr,
-                rightTargetGenes.isEmpty() ? "." : StringUtils.join(rightTargetGenes, ';') ,
-                rightAdjacentPhenogramScoreStr,
-                this.enhancersInLeftRegion.allNamesAsString(),
-                this.enhancersInRightRegion.allNamesAsString(), 
-            };
-        
-        // put together all effect mechanism annotation columns
-        int nClasses = CNV.getEffectMechanismClasses().length;
-        String [] effectMechanismAnnotations = new String [nClasses];
-        for (int i=0; i<nClasses; i++){
-            effectMechanismAnnotations[i] = this.effectMechanism.get(CNV.getEffectMechanismClasses()[i]);
-        }
-                
-        // return generic line (chr, start, end, name) and the additional 
-        // specific columns separated by TAB character:
-        return super.toOutputLine()
-            + "\t" 
-            + StringUtils.join(ArrayUtils.addAll(cnvAnnotations, effectMechanismAnnotations), '\t');
     }
 
     /**
@@ -839,60 +599,6 @@ public class CNV extends GenomicElement {
     }
     
     /**
-     * Set the effect mechanism. For each effect class (like 
-     * TDBD, EA, or EAlowG), this is the mechanism that best explains the patients
-     * phenotype, based on the genomic context and phenotypic similartites.<br><br>
-     * The mechanism class "TDBD" tries to explain this CNV is a topological 
-     * domain boundary disruption (TDBD),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * The class "EA"  indicates that this CNV corresponds to the category enhancer adoption (EA),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * Finally, the class "EAlowG" indicates that this CNV corresponds to the category enhancer adoption 
-     * with low score in overlap (EAlowG), gene dosage effect (GDE), both (Mixed)
-     * or not explainable (NoData).
-     * 
-     * @param mechanimsClass effect mechanism class
-     * @param mechanism the most likely effect mechansim for the given class
-     */
-    public void setEffectMechanism(String mechanimsClass, String mechanism){
-        
-        // if input mechanimsClass is one of the initialized clases 
-        if ( this.effectMechanism.containsKey(mechanimsClass) ){
-            // set the annotation
-            this.effectMechanism.put(mechanimsClass, mechanism);
-        
-        // if any not initialized effect mechnism calss is used as input
-        }else{
-            // thorw an exception and exit
-            System.err.printf("[ERROR] Try to set annotation dict with wrong effect class."
-                    + "Effect class '%s' is not an supporte effect mechanism. Exit now.", mechanimsClass );
-            System.exit(1);
-        }
-    }
-    
-    /**
-     * Returns the most likely effect mechanism for the given class. For each effect class (like 
-     * TDBD, EA, or EAlowG), this is the mechanism that best explains the patients
-     * phenotype, based on the genomic context and phenotypic similartites.<br><br>
-     * The mechanism class "TDBD" tries to explain this CNV is a topological 
-     * domain boundary disruption (TDBD),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * The class "EA"  indicates that this CNV corresponds to the category enhancer adoption (EA),
-     * gene dosage effect (GDE), both (Mixed) or not explainable (NoData).<br>
-     * Finally, the class "EAlowG" indicates that this CNV corresponds to the category enhancer adoption 
-     * with low score in overlap (EAlowG), gene dosage effect (GDE), both (Mixed)
-     * or not explainable (NoData).
-     * 
-     * @param mechanismClass
-     * @return the most likely effect mechanism
-     */
-    public String getEffectMechanism(String mechanismClass){
-
-        return this.effectMechanism.get(mechanismClass);
-
-    }
-
-    /**
      * Overlapped genomic region in the domain overlapping the 3' end of the CNV
      * @return the leftOverlappedDomainRegion
      * @see AnnotateCNVs.defineOverlappedDomainRegions
@@ -928,136 +634,6 @@ public class CNV extends GenomicElement {
         this.rightOverlappedDomainRegion = rightOverlappedDomainRegion;
     }
 
-    /**
-     * add an {@link GeneDosage} {@link EffectAnnotation} to this cnv.
-     * @param gde 
-     */
-    public void addGeneDosageAnnotaion(GeneDosage gde){
-        this.geneDosageAnnotations.add(gde);
-    }
-
-    /**
-     * add an {@link InteractionChange} {@link EffectAnnotation} to this cnv.
-     * @param ice 
-     */
-    public void addInteractionChangeAnnotaion(InteractionChange ice){
-        this.interactionChangeAnnotations.add(ice);
-    }
-
-    /**
-     * calculates the most likely effect mechanism form the lists of {@link GeneDosage}
-     * and {@link InteractionChange} {@link EffectAnnotation}s and outputs a line
-     * for the simple CNV output format.
-     * This line is TAB separated and includes the following fields:
-     * <ul>
-     * <li>chr -> chromosom of CNV</li>
-     * <li>start -> start position of CNV</li>
-     * <li>end -> end position of CNV</li>
-     * <li>name -> the name of the CNV</li>
-     * <li>effect -> an indicator of the effect mechanism</li> 
-     * <li>gene -> the gene symbols of the involved gene</li>
-     * <li>enhancer -> one enhancer elements involved (only one is reported, in case of several possible)</li>
-     * <li>possibleEffects -> the number of possible {@link EffectAnnotation} that also might explain the phenotype </li>
-     * </ul>
-     * @return 
-     */
-    public String getMostLikelyEffectOutputLine(){
-        
-        String outLine = super.toOutputLine();
-        String effect = null;
-        String geneSymbol = ".";
-        String enhancerStr = ".";
-        Integer possibleEffects = this.geneDosageAnnotations.size() + this.interactionChangeAnnotations.size();
-
-        // find best {@link GeneDosage} annotation
-        Double gdeScore = 0.0;
-        GeneDosage bestGeneDosage = null;
-        
-        for (GeneDosage gde: this.geneDosageAnnotations){
-            
-            if (gde.getScore() > gdeScore){
-                bestGeneDosage = gde;
-                gdeScore = gde.getScore();
-            }
-        }
-        
-        // find best {@link InteractionChange} annotation
-        Double interactionScore = 0.0;
-        InteractionChange bestInteraction = null;
-        
-        for (InteractionChange ice : this.interactionChangeAnnotations){
-            
-            if (ice.getScore() > interactionScore){
-                bestInteraction = ice;
-                interactionScore = ice.getScore();
-            }
-        }
-        
-        // if no explaination was found at all
-        if (possibleEffects == 0){
-            effect = "noData";
-            
-        }else{
-            // check if GDE or interaction is the better explaination
-            if (gdeScore >= interactionScore){
-
-                effect = "GDE_" + bestGeneDosage.getDosageChange();
-                geneSymbol = bestGeneDosage.getGene().getSymbol();
-                enhancerStr = ".";
-
-                // if interaction score is greater
-            }else{
-
-                effect = "interaction_" + bestInteraction.getInteractionChange();
-                geneSymbol = bestInteraction.getGene().getSymbol();
-                enhancerStr = bestInteraction.getEnhancers().values().iterator().next().getName();
-            }
-        }
-        
-        // add fields to output line
-        outLine += "\t" + 
-            StringUtils.join(
-                new String[]{effect, geneSymbol, enhancerStr, possibleEffects.toString(),
-                // TODO remove this column after debug
-                this.effectMechanism.get("newTDBD")}, 
-                '\t');
-        
-        return outLine;
-    }
-    
-    /**
-     * A comparison function, which imposes a total ordering on some collection 
-     * of {@link CNV} objects by there TDBD effect mechanism annotation.
-     * 
-     * See {@see Comparator}.
-     */
-    private static class effectMechanismTdbdComparator implements Comparator<CNV> {
-
-        /**
-         * Holds the rank of the ordering of each effect mechanism.
-         */
-        private final static HashMap<String, Integer> effectRank;
-        
-        static{
-            effectRank = new HashMap<String, Integer>();
-            effectRank.put("TDBD", 0);
-            effectRank.put("Mixed", 1);
-            effectRank.put("GDE", 2);
-            effectRank.put("NoData", 3);
-        }
-        
-        @Override
-        public int compare(CNV e1, CNV e2) {
-            
-            // get order of each effenct mechanism string
-            Integer rankE1 = effectRank.get(e1.getEffectMechanism("TDBD"));
-            Integer rankE2 = effectRank.get(e2.getEffectMechanism("TDBD"));
-            
-            // compare the the order ranks of the effect mechanisms  
-            return Integer.signum(rankE1.compareTo(rankE2));
-        }
-    }
-    
     public void debugPrint(){
         System.out.println("DEBUG CNV: " + this.toString());
         System.out.println("DEBUG CNV type " + this.type);
@@ -1082,6 +658,5 @@ public class CNV extends GenomicElement {
         System.out.println("DEBUG CNV leftOverlappedDomainRegion: " + this.leftOverlappedDomainRegion);
         System.out.println("DEBUG CNV rightOverlappedDomainRegion: " + this.rightOverlappedDomainRegion);
         
-        System.out.println("DEBUG CNV effectMechanism: " + this.effectMechanism);
     }
 }
