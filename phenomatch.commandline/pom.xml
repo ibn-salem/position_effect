@@ -34,6 +34,12 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>phenomatch</finalName>
+                    <includeBaseDirectory>false</includeBaseDirectory>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>../bin</outputDirectory>         
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
