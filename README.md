@@ -22,14 +22,21 @@ perl dgap_features_check.pl \
 
 
 **Example:**
+
+To follow the examples using the provided data, extract `data/data_files.zip` into the `data` folder:
+
+```
+unzip data/data_files.zip -d data/
+```
+
 ```
 perl dgap_features_check.pl \
-  -f non_coding_DGAP_positions.bed \
-  -i HI_Predictions_Version3.bed \
-  -g GRCh37.p13_ensembl_genes.txt \
-  -c hESC_hg37_domains.bed \
+  -f data/non_coding_DGAP_positions.bed \
+  -i data/HI_Predictions_Version3.bed \
+  -g data/GRCh37.p13_ensembl_genes.txt \
+  -c data/hESC_hg37_domains.bed \
   -n 3000000 \
-  -o ~/Desktop/Position_Effects_Analysis
+  -o .
 ```
 The GENOMIC_REGIONS file needs to be in a .bed format with columns chr, start, end, case_id. 
 This script generates two files, HiC_list_DGAP.txt (a list of overlapped Hi-C domains by the rearrangement breakpoints) and HI_list_DGAP.txt. 
@@ -126,19 +133,17 @@ Rscript combine_breakpoints_and_phenotypes.R \
 ### b) Compute phenomatch scores
 
 ```
-java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
-                  -i INPUT_FILE \
-                  -d DOMAINS \
-                  -g GENES \
-                  -O PHENOTYPE_ONTOLOGY
-                  -a ANNOTATION_FILE \
-                  -e ENHANCERS \
-                  -o OUTPUT_FILE
+java -jar bin/phenomatch.jar  \
+    -i INPUT_FILE \
+    -g GENES \
+    -O PHENOTYPE_ONTOLOGY
+    -a ANNOTATION_FILE \
+    -o OUTPUT_FILE
 
 ```
 
-Use `-h` option for more usage information and other options including permutation anlaysis.
-The calculation of phenomatch score is described in [Ibn-Salem et al. 2014](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1) and the source code of the topodombar tool is available [here](https://github.com/charite/topodombar/tree/java-implementation).
+Use `-h` option for more usage information and other options including permutation of phenotypes as contorl and providing TAD coordinates for target gene identification.
+The calculation of phenomatch score is described in [Ibn-Salem and Köhler et al. 2014, Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1).
 
 **Example:**
 
