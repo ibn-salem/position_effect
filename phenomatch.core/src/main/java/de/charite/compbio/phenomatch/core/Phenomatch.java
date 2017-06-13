@@ -49,21 +49,24 @@ public class Phenomatch {
     /** Topological domains regions */
     private GenomicSet<GenomicElement> domains;
 
-    /** Topological domain boundary regions*/
-    private GenomicSet<GenomicElement> boundaries;
-    
     /** Genes */
     private GenomicSet<Gene> genes;
-
-    // some parameters:
-    /** Size of adjacent regions, in case they are defined by size */
-    private int regionSize;
     
-    private String outputPath;
-    
-    private Integer genePermutations;
+    /** file paths to input and output files **/
+    private String cnvPath;
     
     private String genesPath;
+    
+    private String domainPath;
+    
+    private String ontologyPath;
+    
+    private String annotationPath;
+
+    private Integer genePermutations;    
+
+    private String outputPath;
+    
     
     /**
      * Constructor for an instance of the {@link Phenomatch} program with input 
@@ -75,19 +78,18 @@ public class Phenomatch {
     public Phenomatch(Map<String, Object> argMap) throws IOException{
         
         // get the individual values
-        String ontologyPath = (String) argMap.get("phenotype_ontology");
-        String annotationPath = (String) argMap.get("annotation_file");
-        
-        String cnvPath = (String) argMap.get("input_file");
-        String domainPath = (String) argMap.get("domains");
+        this.cnvPath = (String) argMap.get("input_file");
         this.genesPath = (String) argMap.get("genes");
+        this.ontologyPath = (String) argMap.get("phenotype_ontology");
+        this.annotationPath = (String) argMap.get("annotation_file");
         this.outputPath = (String) argMap.get("output_file");
         
         // parse optional arguments:
+        this.domainPath = (String) argMap.get("domains");
         this.genePermutations = (Integer) argMap.get("permut_genes");
         
         // read the phenotype ontology
-        this.phenotypeData = new PhenotypeData(ontologyPath, annotationPath);
+        this.phenotypeData = new PhenotypeData(this.ontologyPath, this.annotationPath);
         System.out.println("[INFO] Ontology and annotation table were parsed.");
 
         ////////////////////////////////////////////////////////////////////////
@@ -103,41 +105,23 @@ public class Phenomatch {
         ////////////////////////////////////////////////////////////////////////
 
         // read topological domain regions and compute boundaries from it.
-        TabFileParser domainParser = new TabFileParser(domainPath);
-        // parse topological domains 
-        domains = domainParser.parse();
-
-        // Check if domains are non-overlapping
-        ArrayList<Integer> domainOvls = new ArrayList<Integer>();
-        for (GenomicElement tad: domains.values()){
-            domainOvls.add(domains.anyOverlap(tad).size());
-        }
         
-        // Each domain should only overlap itself to be non-overlapping
-        if(Collections.max(domainOvls) <= 1){
-            // TODO: compute boundaries directely form input GenomicSet of domains
-            // read topological domain regions and compute boundaries from it.
-            boundaries = domainParser.parseBoundariesFromDomains();
-        }else{
-            boundaries = new GenomicSet<GenomicElement>();
+        if(this.domainPath != null){
+            
+            TabFileParser domainParser = new TabFileParser(this.domainPath);
+            // parse topological domains 
+            domains = domainParser.parse();
         }
         
         ////////////////////////////////////////////////////////////////////////
         //  Genes
         ////////////////////////////////////////////////////////////////////////
-        // read genes and compute overlap with genes
         genes = new TabFileParser(genesPath).parseGeneWithTerms(phenotypeData);        
         
         // add GeneSymbol to genes
         HashMap<String, String> entrezToSymbol = new GeneSymbolParser(annotationPath).parseEntrezToSymbol();
         addGeneSymbol(genes, entrezToSymbol);
         
-        ////////////////////////////////////////////////////////////////////////
-        //  Enhancers
-        ////////////////////////////////////////////////////////////////////////
-        
-        // read enhancers 
-//        enhancers = new TabFileParser(enhancersPath).parse();
     }
 
     /**
@@ -148,8 +132,6 @@ public class Phenomatch {
         
         // save original CNVs and gene to phenotype mapping
         GenomicSet<CNV> orgCNVs = this.cnvs;
-        PhenotypeData orgPhenotypeData = this.phenotypeData;
-        GenomicSet<Gene> orgGenes = this.genes;
                 
         if(this.genePermutations > 0){
             
@@ -170,9 +152,10 @@ public class Phenomatch {
         // annotate CNVs with genes that are completely overlapped by the CNV
         AnnotateCNVs.annotateOverlappedGenes(cnvs, genes);
         
-        // annotate CNVs with genes that are within TAD that have any overlap with the CNV
-        AnnotateCNVs.annotateGenesInOverlapTADs(cnvs, domains, genes);
-
+        if (this.domainPath != null){
+            // annotate CNVs with genes that are within TAD that have any overlap with the CNV
+            AnnotateCNVs.annotateGenesInOverlapTADs(cnvs, domains, genes);
+        }
     }
     
     /**
@@ -207,7 +190,10 @@ public class Phenomatch {
             for (CNV cnv : cnvs.values() ){
             
                 outLinesOl.addAll(cnv.getOverlappedGenesOutputLine(phenotypeData, cnv.getGenesInOverlap()));
-                outLinesOlTAD.addAll(cnv.getOverlappedGenesOutputLine(phenotypeData, cnv.getGenesInOverlapTADs()));
+                
+                if(this.domainPath != null){
+                    outLinesOlTAD.addAll(cnv.getOverlappedGenesOutputLine(phenotypeData, cnv.getGenesInOverlapTADs()));
+                }
             }
         }
 
@@ -219,14 +205,15 @@ public class Phenomatch {
                 + "permutated gene to phenotype annotation to output file "
                 + "'"+this.outputPath+".permutGenePT_" + this.genePermutations + ".overlapped_genes.txt'.");
 
-        // write gene output lines to output file:
-        TabFileWriter geneOutWriterOlTAD = new TabFileWriter(outputPath + 
-                ".permutGenePT_" + this.genePermutations + ".genes_in_overlapped_TADs.txt");
-        geneOutWriterOlTAD.writeLines(outLinesOlTAD);
-        System.out.println("[INFO] Topodombar: Wrote all genes in overlapped TADs from "
-                + "permutated gene to phenotype annotation to output file "
-                + "'"+this.outputPath+".permutGenePT_" + this.genePermutations + ".genes_in_overlapped_TADs.txt'.");
-                        
+        if (this.domainPath != null){
+            // write gene output lines to output file:
+            TabFileWriter geneOutWriterOlTAD = new TabFileWriter(outputPath + 
+                    ".permutGenePT_" + this.genePermutations + ".genes_in_overlapped_TADs.txt");
+            geneOutWriterOlTAD.writeLines(outLinesOlTAD);
+            System.out.println("[INFO] Topodombar: Wrote all genes in overlapped TADs from "
+                    + "permutated gene to phenotype annotation to output file "
+                    + "'"+this.outputPath+".permutGenePT_" + this.genePermutations + ".genes_in_overlapped_TADs.txt'.");
+        }
     }
     
     
@@ -245,12 +232,13 @@ public class Phenomatch {
         outWriterOl.writeLines(outLines);
         System.out.println("[INFO] Wrote all overlapped genes to output file '"+this.outputPath+".overlapped_genes.txt'.");
 
-        TabFileWriter<CNV> outWriterOlTAD = new TabFileWriter<CNV>(this.outputPath + ".genes_in_overlapped_TADs.txt");
+        if (this.domainPath != null){
+            TabFileWriter<CNV> outWriterOlTAD = new TabFileWriter<CNV>(this.outputPath + ".genes_in_overlapped_TADs.txt");
 
-        ArrayList<String> outLinesTADs = getGenesInOverlappedTADs(this.cnvs, this.phenotypeData);
-        outWriterOlTAD.writeLines(outLinesTADs);
-        System.out.println("[INFO] Wrote all genes in overlapped TADs to output file '"+this.outputPath+".genes_in_overlapped_TADs.txt'.");
-       
+            ArrayList<String> outLinesTADs = getGenesInOverlappedTADs(this.cnvs, this.phenotypeData);
+            outWriterOlTAD.writeLines(outLinesTADs);
+            System.out.println("[INFO] Wrote all genes in overlapped TADs to output file '"+this.outputPath+".genes_in_overlapped_TADs.txt'.");
+        }
     }    
 
     /**

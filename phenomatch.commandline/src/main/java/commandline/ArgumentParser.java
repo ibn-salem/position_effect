@@ -35,9 +35,6 @@ public class ArgumentParser {
         argsParser.addArgument("-i", "--input-file").required(true)
                 .help("input file with genomic regions in TAB separated file format");
         
-        argsParser.addArgument("-d", "--domains").required(false)
-                .help("Topologically associating domains (TADs) in BED file format. "
-                        + "Non-overlapping regions are assumed");        
         argsParser.addArgument("-g", "--genes").required(true).help("Genes in BED like format");
  
         argsParser.addArgument("-O", "--phenotype-ontology").required(true)
@@ -48,6 +45,9 @@ public class ArgumentParser {
         argsParser.addArgument("-o", "--output-file").required(true)
                 .help("output file to which the annotated CNVs will be written");
         // add optional parameters
+        argsParser.addArgument("-d", "--domains").required(false)
+                .help("Topologically associating domains (TADs) in BED file format. "
+                        + "Non-overlapping regions are assumed");        
         argsParser.addArgument("--permut-genes").type(Integer.class).metavar("N")
                 .setDefault(0).help("Permute the phenotype annotations of genes "
                         + "associated to human phenotypes N time and run "
