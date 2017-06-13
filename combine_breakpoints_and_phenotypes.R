@@ -41,7 +41,7 @@ WIN_SIZE <- 6
 # parse input data
 #-------------------------------------------------------------------------------
 
-patientDF <- read.table(inFile, header=TRUE)
+patientDF <- read.table(inFile, header = TRUE)
 
 bpDF <- read.table(inFileBreakPoints)
 
@@ -62,12 +62,8 @@ bpDF$HPO <-  sapply(patientIDs, function(ID){
   paste(patientDF[patientDF$ID == ID,  "HPO"], collapse=";")
 })
 
-# add (artificially) cnv type and target term for the topodombar analysis 
-bpDF$type <- "loss"
-bpDF$target_term <- "HP:0001249" #Intellectual disability	Fetal_Brain
-
 # reorder colums to match the input format of topodombar tool:
-bpDF <- bpDF[,c("chr", "start", "end", "Breakpoint_ID", "type", "HPO", "target_term")]
+bpDF <- bpDF[,c("chr", "start", "end", "Breakpoint_ID", "HPO")]
 
 # # write output file
 # write.table(bpDF, file = outFileBP, col.names = FALSE, row.names = FALSE, sep="\t", quote = FALSE)
