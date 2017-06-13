@@ -81,7 +81,7 @@ public class Phenomatch {
         this.genesPath = (String) argMap.get("genes");
         this.ontologyPath = (String) argMap.get("phenotype_ontology");
         this.annotationPath = (String) argMap.get("annotation_file");
-        this.outputPath = (String) argMap.get("output_file");
+        this.outputPath = (String) argMap.get("output_prefix");
         
         // parse optional arguments:
         this.domainPath = (String) argMap.get("domains");
