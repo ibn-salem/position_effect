@@ -22,7 +22,8 @@
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
             </snapshots>
-        </repository>    </repositories>
+        </repository>    
+    </repositories>
     <!--<repositories>-->
 <!--        <repository>
             <id>nexus.phenotips.org</id>
