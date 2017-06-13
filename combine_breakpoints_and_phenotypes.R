@@ -9,12 +9,14 @@
 # Rscript combine_breakpoints_and_phenotypes.R \
 #   SUBJECT_TO_PHENOTYPES \
 #   BREAKPOINTS_BED \
+#   WINDOE_SIZE \
 #   OUTPUT_FILE
 #
 # 2017 by Jonas Ibn-Salem <j.ibn-salem@uni-mainz.de>
 #########################################################################
 
 require(stringr) # for str_split_fixed()
+require(readr)  # for tsv file writing
 
 #-------------------------------------------------------------------------------
 # Commandline arguments and parameters: 
@@ -29,13 +31,11 @@ inFile <- args[1]
 # inFileBreakPoints <- "non_coding_DGAP_positions.bed"
 inFileBreakPoints <-  args[2]
 
-# output file anes
-# outFileWindow <- "v07_breakpoint_window_with_HPO.bed"
-outFileWindow <- args[3]
-
-
 # Window sizes in Mb
-WIN_SIZE <- 6
+WIN_SIZE <- parse_integer(args[3])
+
+# output file
+outFileWindow <- args[4]
 
 #-------------------------------------------------------------------------------
 # parse input data
@@ -77,10 +77,12 @@ bpWinDF <- bpDF
 
 # define center of input regions and extend by half of the window size to both directions
 center <- round( (bpWinDF$start + bpWinDF$end) / 2 )
-bpWinDF$start <- center - WIN_SIZE/2 * 10^6
-bpWinDF$end <- center + WIN_SIZE/2 * 10^6
+bpWinDF$start <- center - WIN_SIZE/2
+bpWinDF$end <- center + WIN_SIZE/2
 
 # write output file
-write.table(bpWinDF, file = paste0(outFileWindow, ".", WIN_SIZE, "MB_win.bed"), 
-            col.names = FALSE, row.names = FALSE, sep = "\t", quote = FALSE)
+# write.table(bpWinDF, file = paste0(outFileWindow, ".", WIN_SIZE, "MB_win.bed"),
+#             col.names = FALSE, row.names = FALSE, sep = "\t", quote = FALSE)
+write_tsv(bpWinDF, outFileWindow,
+          col_names = FALSE)
 
