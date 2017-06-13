@@ -30,7 +30,7 @@ unzip data/data_files.zip -d data/
 ```
 
 ```
-perl dgap_features_check.pl \
+perl perl/dgap_features_check.pl \
   -f data/non_coding_DGAP_positions.bed \
   -i data/HI_Predictions_Version3.bed \
   -g data/GRCh37.p13_ensembl_genes.txt \
@@ -86,9 +86,9 @@ perl enh_promoter_disruption_checker_DGAP.pl \
 **Example:**
 
 ```
-perl enh_promoter_disruption_checker_DGAP.pl \
-  -f non_coding_DGAP_positions.bed \
-  -d genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 \
+perl perl/enh_promoter_disruption_checker_DGAP.pl \
+  -f data/non_coding_DGAP_positions.bed \
+  -d data/genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 \
   -a 3000000 \
   -o DHS_promoter_broken_DGAP.txt
 ```
@@ -123,9 +123,9 @@ The output file `OUTPUT_FILE` contains all breakpoints with an additional column
 **Example:**
 
 ```
-Rscript combine_breakpoints_and_phenotypes.R \
-  HPO_distal_cases.txt \
-  non_coding_DGAP_positions.bed \
+Rscript R/combine_breakpoints_and_phenotypes.R \
+  data/HPO_distal_cases.txt \
+  data/non_coding_DGAP_positions.bed \
   6000000 \
   breakpoint_window_with_HPO.6MB_win.bed
 ```
@@ -133,7 +133,7 @@ Rscript combine_breakpoints_and_phenotypes.R \
 ### b) Compute phenomatch scores
 
 ```
-java -jar bin/phenomatch.jar  \
+java -jar phenomatch.jar  \
     -i INPUT_FILE \
     -g GENES \
     -O PHENOTYPE_ONTOLOGY
@@ -152,16 +152,17 @@ java -jar bin/phenomatch.jar \
   -i breakpoint_window_with_HPO.6MB_win.bed \
   -g data/knownGene.txt.entrez_id.tab.unique \
   -O data/hp.obo \
-  -a data/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt  \
+  -a data/ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt  \
   -o breakpoint_window_with_HPO.6MB_win.bed.phenomatch
 ```
 
-The HPO files `hpo.obo`and `ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt` can be downloaded from the following URLs:
+The HPO files in `data/data_files.zip` are not the latest version and rather provided for reproducibility of the above mentioned manuscript. 
+More recent versions of HPO and gene phenotype annotationas can be downloaded from these URLs:
 
 + http://purl.obolibrary.org/obo/hp.obo
 + http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt
 
-The tool will create several output files with the same prefix. The ouput file `breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt` contains phenomatch scores.
+The tool will create an output file `breakpoint_window_with_HPO.6MB_win.bed.phenomatch.overlapped_genes.txt` containing phenomatch scores of genes close the the breakpoints.
 
 ## STEP 4:
 You can calculate the percentile for the phenomatch and max_phenomatch scores by using the R script get_percentiles_DGAP_all.r
@@ -174,8 +175,8 @@ Rscript --vanilla get_percentiles_DGAP_all.r PHENO_FILE > OUTPUT_FILENAME
 
 **Example:**
 ```
-Rscript --vanilla get_percentiles_DGAP_all.r \
-  breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt \
+Rscript --vanilla R/get_percentiles_DGAP_all.r \
+  breakpoint_window_with_HPO.6MB_win.bed.phenomatch.overlapped_genes.txt \
   > percentiles_6Mb_pheno_maxpheno.txt
 ```
 
@@ -196,12 +197,12 @@ perl dgap_final_table_maker.pl \
 
 **Example:**
 ```
-perl dgap_final_table_maker.pl \
+perl perl/dgap_final_table_maker.pl \
   -f HI_list_DGAP.txt \
-  -c hESC_hg37_domains.bed \
+  -c data/hESC_hg37_domains.bed \
   -d DHS_promoter_broken_breakpDGAP.txt \
-  -h ClinGen_haploinsufficiency_gene.bed \
-  -t ClinGen_triplosensitivity_gene.bed \
+  -h data/ClinGen_haploinsufficiency_gene.bed \
+  -t data/ClinGen_triplosensitivity_gene.bed \
   -m percentiles_6Mb_pheno_maxpheno.txt \
   -o DGAP_table_summary.txt
 ```
