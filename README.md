@@ -97,9 +97,10 @@ Here phenomatch scores are calculated for genes located close to rearrangment br
 Rscript combine_breakpoints_and_phenotypes.R \
   SUBJECT_TO_PHENOTYPES \
   BREAKPOINTS_BED \
+  WINDOW_SIZE \
   OUTPUT_FILE
 ```
-This scripts takes two files as input:
+This scripts takes two files and the window size aroud breakpoints in bp as input:
 `SUBJECT_TO_PHENOTYPES` is a tab delimited file with two columns and column headers:
 
 + **ID** the subject ID
@@ -118,7 +119,8 @@ The output file `OUTPUT_FILE` contains all breakpoints with an additional column
 Rscript combine_breakpoints_and_phenotypes.R \
   HPO_distal_cases.txt \
   non_coding_DGAP_positions.bed \
-  breakpoint_window_with_HPO.bed
+  6000000 \
+  breakpoint_window_with_HPO.6MB_win.bed
 ```
 
 ### b) Compute phenomatch scores
@@ -141,14 +143,12 @@ The calculation of phenomatch score is described in [Ibn-Salem et al. 2014](http
 **Example:**
 
 ```
-java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
-    -i breakpoint_window_with_HPO.bed.6MB_win.bed \
-    -d hESC_hg37_domains.bed  \
-    -g knownGene.txt.entrez_id.tab.unique \
-    -O hp.obo \
-    -a ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt \
-    -e Fetal_Brain.tab \
-    -o breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out
+java -jar bin/phenomatch.jar \
+  -i breakpoint_window_with_HPO.6MB_win.bed \
+  -g data/knownGene.txt.entrez_id.tab.unique \
+  -O data/hp.obo \
+  -a data/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt  \
+  -o breakpoint_window_with_HPO.6MB_win.bed.phenomatch
 ```
 
 The HPO files `hpo.obo`and `ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt` can be downloaded from the following URLs:
