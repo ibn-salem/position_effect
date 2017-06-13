@@ -130,10 +130,6 @@ public class ExampleData {
     
     /** target term list */
     private final ArrayList<TargetTerm> targetTermList;
-    
-    /** Mapping of target terms to target genes */
-    private final HashMap<Term, HashSet<String>> targetTerm2targetGene;
-    
 
     /**
      * This constructor parses the example data and build up the example data
@@ -184,7 +180,6 @@ public class ExampleData {
         for (Term t : targetTerms){
             targetTermList.add(new TargetTerm(t, t.getName(), this.enhancers));
         }
-        targetTerm2targetGene = phenotypeData.mapTargetTermToGenes(targetTermList);
 
         // create parser for domain example dataset
         String domainPath = ExampleData.class.getResource("/example_domains.tab").getPath();
@@ -260,14 +255,6 @@ public class ExampleData {
      */
     public HashSet<Term> getTargetTerms() {
         return targetTerms;
-    }
-
-    /**
-     * Mapping of target terms to target genes
-     * @return the targetTerm2targetGene
-     */
-    public HashMap<Term, HashSet<String>> getTargetTerm2targetGene() {
-        return targetTerm2targetGene;
     }
 
     /**

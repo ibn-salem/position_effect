@@ -33,17 +33,12 @@ import genomicregions.GenomicSet;
 import io.TabFileParser;
 import io.TabFileParserTest;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import ontologizer.go.Term;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
-import phenotypeontology.PhenotypeData;
 import toyexampledata.ExampleData;
 
 /**
@@ -97,39 +92,6 @@ public class AnnotateCNVsTest {
     }
 
     /**
-     * Test of boundaryOverlap method, of class AnnotateCNVs.
-     */
-    @Test
-    public void testBoundaryOverlap() {
-        System.out.println("boundaryOverlap");
-        
-        //System.out.println(inversions);
-        //System.out.println(boundaries);
-        
-        AnnotateCNVs.boundaryOverlap(cnvs, boundaries);
-        
-        // check if all boundaries are read.
-        // The sample file containes 30 elements
-        assertEquals(boundaries.size(), 30);
-        
-        AnnotateCNVs.boundaryOverlap(cnvs, boundaries);
-        
-        // count number of inversions that overlap any boundary
-        Integer cnt = 0;
-        for (CNV c : cnvs.values()){
-            if (! c.getBoundaryOverlap().isEmpty()){
-                cnt++;
-            }
-        }
-        // 34 of the sample CNVs should overlap completely at leaste one boundary, 
-        // as calulated with the python script 'filter_overlap.py' from the barrier project.
-        Integer expCnt = 34;
-        assertEquals(expCnt, cnt);
-
-
-    }
-
-    /**
      * Test of annotateOverlappedGenes method, of class AnnotateCNVs.
      */
     @Test
@@ -137,30 +99,6 @@ public class AnnotateCNVsTest {
         System.out.println("geneOverlap");
         AnnotateCNVs.annotateOverlappedGenes(cnvs, genes);
         
-    }
-
-    /**
-     * Test of defineOverlappedDomainRegions method, of class AnnotateCNVs.
-     */
-    @Test
-    public void testDefineOverlappedDomainRegions() {
-        System.out.println("defineOverlappedDomainRegions");
-        GenomicSet<CNV> cnvs = exampleData.getCnvs();
-        GenomicSet<GenomicElement> domains = exampleData.getDomains();
-        GenomicSet<GenomicElement> boundaries = exampleData.getBoundaries();
-        
-        AnnotateCNVs.boundaryOverlap(cnvs, boundaries);        
-        AnnotateCNVs.defineOverlappedDomainRegions(cnvs, domains);
-        
-        GenomicElement leftOverlappedCnv1 = new GenomicElement("chr1", 9, 12, "leftOverlapped");
-        GenomicElement rightOverlappedCnv1 = new GenomicElement("chr1", 15, 19, "rightOverlapped");
-        
-        assertEquals(leftOverlappedCnv1, cnvs.get("cnv1").getLeftOverlappedDomainRegion());
-        assertEquals(rightOverlappedCnv1, cnvs.get("cnv1").getRightOverlappedDomainRegion());
-        
-        // cnv4 left border overlaps domain
-        GenomicElement leftOverlappedCnv4 = new GenomicElement("chr1", 14, 14, "leftOverlapped");
-        assertEquals(leftOverlappedCnv4, cnvs.get("cnv4").getLeftOverlappedDomainRegion());
     }
 
     /**
@@ -182,26 +120,6 @@ public class AnnotateCNVsTest {
         
         // cnv4 does not ovelrap any gene
         assertEquals(new GenomicSet<Gene>(), cnvs.get("cnv4").getGenesInOverlap());
-    }
-
-
-    /**
-     * Test of overlapPhenogramScore method, of class AnnotateCNVs.
-     */
-    @Test
-    public void testOverlapPhenogramScore() {
-        System.out.println("overlapPhenogramScore");
-        GenomicSet<CNV> cnvs = exampleData.getCnvs();
-        GenomicSet<Gene> genes = exampleData.getGenes();
-        PhenotypeData phenotypeData = exampleData.getPhenotypeData();
-        AnnotateCNVs.overlapPhenogramScore(cnvs, phenotypeData);
-
-        // cnv1 overlaps only genes B and D with phenomatch scores each of 0.29
-        assertEquals(0.29, cnvs.get("cnv1").getOverlapPhenogramScore(), 0.01);
-    
-        // cnv4 does not overlap any gene
-        assertEquals(0.0, cnvs.get("cnv4").getOverlapPhenogramScore(), 0.01);
-
     }
 
     /**

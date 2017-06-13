@@ -29,17 +29,13 @@ package genomicregions;
 import annotation.AnnotateCNVs;
 import io.Utils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import ontologizer.go.Term;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils; // provides a join(iterable, char) function
 import phenotypeontology.PhenotypeData;
 import phenotypeontology.TermPair;
-import static phenotypeontology.TermPair.toScore;
 
 /**
  * This class implements a copy number variation (CNV) object. The CNV has a 
@@ -62,11 +58,9 @@ public class CNV extends GenomicElement {
      * Phenotype terms of the CNV carrier as {@link HashSet} of {@link Term} objects.
      */
     private final HashSet<Term> phenotypes;
-
     
     /** Target term or phenotype category as single general HPO term ID. */    
     private final Term targetTerm;
-    
     
     /** List of overlapping boundaries. */
     private GenomicSet<GenomicElement> boundaryOverlap;    
@@ -110,25 +104,7 @@ public class CNV extends GenomicElement {
     /** Phenogram score of genes in the right adjacent region. */
     private Double rightAdjacentPhenogramScore;
     
-    /**
-     * Possible CNV effect mechanism classes maped to the possible effect annotations.
-     */
-    private final  static HashMap<String, String []> effectMechansim2effects;
-    static{
-        effectMechansim2effects = new HashMap();
-        effectMechansim2effects.put("TDBD", new String [] {"TDBD", "Mixed", "GDE", "NoData", "NA"});    
-        effectMechansim2effects.put("newTDBD", new String [] {"TDBD", "Mixed", "GDE", "NoData", "NA"});    
-        effectMechansim2effects.put("EA", new String [] {"EA", "Mixed", "GDE", "NoData", "NA"});    
-        effectMechansim2effects.put("EAlowG", new String [] {"EAlowG", "Mixed", "GDE", "NoData", "NA"});    
-        effectMechansim2effects.put("InvEA", new String [] {"EandGInvEA", "EnhancerInvEA", "GeneInvEA", "NoInvEA", "NA"});    
-        /** 
-         * Inversion enhancer removal (InvER).
-         * Here the inversion removes an enhancer that is normally associated to phenotypically relevant gene
-         * Or alternatively the gene gets inverted (moves to an other domain).
-         */
-        effectMechansim2effects.put("InvER", new String [] {"InvertedEnhancer", "InvertedGene", "NoInvER", "NA"});    
-        effectMechansim2effects.put("TanDupEA", new String [] {"TanDupEA", "onlyGDE", "NoData", "NA"});    
-    }
+
    
     /**
      * Constructor for CNV object.
@@ -164,6 +140,46 @@ public class CNV extends GenomicElement {
         this.enhancersInLeftRegion = new GenomicSet<GenomicElement>();
         this.enhancersInRightRegion = new GenomicSet<GenomicElement>();
         
+    }
+
+    /**
+     * Constructor for {@link CNV} object.
+     * Construct an CNV object by taking only chr, start, end, name, and 
+     * phenotypes as arguments.
+     * 
+     * @param chr   Chromosome identifier
+     * @param start Start coordinate (0-based)
+     * @param end   End coordinate (0-based, half-open)
+     * @param name  Name or ID of the CNV
+     * @param phenotypes    List of HPO term IDs that represent the phenotypes used to annotate the patient carrying the CNV.
+     */
+    public CNV(String chr, int start, int end, String name, 
+            HashSet<Term> phenotypes){
+
+        // consturct an CVN object using the constructor of the {@link GenomicElement} super calss
+        super(chr, start, end, name);
+        
+        this.overlapPhenogramScore = -1.0;
+        this.genesInOverlap = new GenomicSet();
+        this.boundaryOverlap = new GenomicSet();
+        
+        // add annotations
+        this.type = null;
+        this.phenotypes = phenotypes;
+        this.targetTerm = null;        
+        
+        // set default annotaton for other fealds
+        this.boundaryOverlap = new GenomicSet<GenomicElement>();
+        this.genesInOverlap = new GenomicSet<Gene>();
+        this.genesInOverlapTADs = new GenomicSet<Gene>();
+        this.overlapPhenogramScore = -1.0;
+        this.genesInLeftRegion = new GenomicSet<Gene>();
+        this.leftAdjacentPhenogramScore = -1.0;
+        this.genesInRightRegion = new GenomicSet<Gene>();
+        this.rightAdjacentPhenogramScore = -1.0;
+        this.enhancersInLeftRegion = new GenomicSet<GenomicElement>();
+        this.enhancersInRightRegion = new GenomicSet<GenomicElement>();        
+
     }
     
     /**
@@ -205,29 +221,6 @@ public class CNV extends GenomicElement {
         this.enhancersInLeftRegion = new GenomicSet<GenomicElement>();
         this.enhancersInRightRegion = new GenomicSet<GenomicElement>();        
 
-    }
-    
-
-    /**
-     * Create a header line as TAB-separated string with all column identifiers 
-     * for the simple output file format.
-     * 
-     * @return simple output file header as TAB separated column descriptions
-     */
-    public static String getSimpleOutputHeader(){
-        
-        String [] cnvColumns = new String[]{
-                    "#chr",
-                    "start",
-                    "end",
-                    "name",
-                    "mostLikelyEffect", 
-                    "gene", 
-                    "enhancer",
-                    "affectedGenes",
-                };
-        // add the effect mechanism columns and return a TAB-separated string.
-        return StringUtils.join(cnvColumns, '\t');
     }
 
     /**

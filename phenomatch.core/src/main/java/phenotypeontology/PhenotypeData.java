@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -244,12 +243,7 @@ public class PhenotypeData  implements Cloneable{
             for (Term t_p : terms) {
                 
                 // compute pairwise similarity 
-                double termSim = this.sim.computeSimilarity(t_p, t_g);
-//                double termSim = resnikSim(t_p, t_g);
-
-//                TermPair tp = resnikSimWithTerm(t_p, t_g);
-//                double termSim = tp.getS();
-                
+                double termSim = this.sim.computeSimilarity(t_p, t_g);                
                 
                 // take it as max if sim is larger
                 if (termSim > bestGeneTermScore)
@@ -261,12 +255,7 @@ public class PhenotypeData  implements Cloneable{
             //    similarity = similarity + Math.pow(bestGeneTermScore, k);
             //}
         
-            // take max across gene terms
-//            System.out.println("DEBUG: return max across gene terms!");
             similarity += bestGeneTermScore;
-//            if (bestGeneTermScore >= similarity){
-//                similarity = bestGeneTermScore;
-//            }
         }
 
         return similarity;
@@ -315,12 +304,6 @@ public class PhenotypeData  implements Cloneable{
             }
         }
         
-//        // take max across gene terms
-//        ArrayList<TermPair> maxMatching = new ArrayList<TermPair>();
-//        if (matching.size() > 0){
-//            maxMatching.add(Collections.max(matching, TermPair.TERM_PAIR_SCORE_ORDER));
-//        }
-//        return maxMatching;
         return matching;
     }
 
@@ -349,46 +332,6 @@ public class PhenotypeData  implements Cloneable{
             // return the maximal phenoMatch score
             return Collections.max(phenoMatchScores);   
         }
-    }
-        
-    /**
-     * builds a mapping for phenotpye terms to the set of genes that are associated
-     * with the phenotype or more specific descendants of the phenotype.
-     * 
-     * @param targetTerms the input terms for which the mapping should be computed.
-     * @return a mapping for each input term to a set of genes associated to the term.
-     */
-    public HashMap<Term, HashSet<String>> mapTargetTermToGenes(ArrayList<TargetTerm> targetTerms){
-        
-        HashMap<Term, HashSet<String>> term2genes = new HashMap();
-        // for all target terms initialize empty set:
-        for (TargetTerm tT: targetTerms){
-            term2genes.put(tT.getTerm(), new HashSet<String>());
-        }
-        
-        // iterate over all genes that have phenotype associations
-        for (String geneID : this.gene2Terms.keySet()){
-            
-            HashSet<Term> geneAncestorSet = new HashSet<Term>();
-            
-            // iterate over all phenotype terms associated with this gene:
-            for (Term t : this.gene2Terms.get(geneID)){
-                
-                // test if gene term t is an ancester of target terms:
-                for (TargetTerm tT: targetTerms){
-                    
-                    // check if targetTerm tT equals gene term t
-                    // or if tT is an ancesotr of t.
-                    if ( this.isAncestorOrEqual(t, tT.getTerm()) ){
-
-                        // add gene to set of targetTerm associated genes
-                        term2genes.get(tT.getTerm()).add(geneID);
-
-                    }
-                }
-            }
-        }                
-        return term2genes;
     }
 
     /**

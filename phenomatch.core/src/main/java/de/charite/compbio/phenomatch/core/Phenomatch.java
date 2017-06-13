@@ -17,7 +17,6 @@ import io.TabFileParser;
 import io.TabFileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -53,19 +52,19 @@ public class Phenomatch {
     private GenomicSet<Gene> genes;
     
     /** file paths to input and output files **/
-    private String cnvPath;
+    private final String cnvPath;
     
-    private String genesPath;
+    private final String genesPath;
     
-    private String domainPath;
+    private final String domainPath;
     
-    private String ontologyPath;
+    private final String ontologyPath;
     
-    private String annotationPath;
+    private final String annotationPath;
 
-    private Integer genePermutations;    
+    private final Integer genePermutations;    
 
-    private String outputPath;
+    private final String outputPath;
     
     
     /**
@@ -98,7 +97,7 @@ public class Phenomatch {
 
         // read CNV data from input file:
         TabFileParser cnvParser = new TabFileParser(cnvPath);        
-        cnvs = cnvParser.parseCNVwithPhenotypeAnnotation(this.phenotypeData);
+        cnvs = cnvParser.parseCNVwithHpoTerms(this.phenotypeData);
         
         ////////////////////////////////////////////////////////////////////////
         //  Domains and Boundaries
@@ -123,7 +122,21 @@ public class Phenomatch {
         addGeneSymbol(genes, entrezToSymbol);
         
     }
-
+    
+    /**
+     * Runs the entire analysis.
+     */
+    public void runAnalysis(){
+        
+        // annotate CNVs with genes that are completely overlapped by the CNV
+        AnnotateCNVs.annotateOverlappedGenes(cnvs, genes);
+        
+        if (this.domainPath != null){
+            // annotate CNVs with genes that are within TAD that have any overlap with the CNV
+            AnnotateCNVs.annotateGenesInOverlapTADs(cnvs, domains, genes);
+        }
+    }
+    
     /**
      * Run permutation analysis to get significance of actual data
      */
@@ -141,20 +154,6 @@ public class Phenomatch {
             // permutate gene phenotypes:
             analysePermutedGenePhenotypes(this.genePermutations);
 
-        }
-    }
-    
-    /**
-     * Runs the entire analysis.
-     */
-    public void runAnalysis(){
-        
-        // annotate CNVs with genes that are completely overlapped by the CNV
-        AnnotateCNVs.annotateOverlappedGenes(cnvs, genes);
-        
-        if (this.domainPath != null){
-            // annotate CNVs with genes that are within TAD that have any overlap with the CNV
-            AnnotateCNVs.annotateGenesInOverlapTADs(cnvs, domains, genes);
         }
     }
     

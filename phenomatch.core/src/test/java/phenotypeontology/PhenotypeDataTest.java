@@ -198,26 +198,6 @@ public class PhenotypeDataTest {
         assertEquals(expResult, result, 0.001);
         
     }
-
-    /**
-     * Test of mapTargetTermToGenes method, of class PhenotypeData.
-     */
-    @Test
-    public void testMapTargetTermToGenes() throws IOException {
-        System.out.println("mapTargetTermToGenes");
-         ArrayList<TargetTerm> targetTerms = exampleData.getTargetTermList();
-
-        HashSet<String> genes = new HashSet();
-        genes.add("geneA");
-        genes.add("geneB");
-        genes.add("geneD");
-        
-        HashMap<Term, HashSet<String>> expResult = new HashMap();
-        expResult.put(phenotypeData.getTermIncludingAlternatives("EP:05"), genes);
-        
-        HashMap<Term, HashSet<String>> result = phenotypeData.mapTargetTermToGenes(targetTerms);
-        assertEquals(expResult, result);
-    }
     
     /**
      * test the getDirectRelation method from the Ontology class from the ontologizer package

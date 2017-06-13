@@ -211,19 +211,7 @@ public class TabFileParserTest {
         assertTrue(geneA.equals( genes.get("geneA") ));
         assertEquals(geneA.getPhenotypeTerms(), genes.get("geneA").getPhenotypeTerms());
     }
-
-    /**
-     * Test of parseBoundariesFromDomains method, of class TabFileParser.
-     * @throws java.io.IOException
-     */
-    @Test
-    public void testParseBoundariesFromDomains() throws IOException{
-        System.out.println("parseBoundariesFromDomains");
-        GenomicSet<GenomicElement> expResult = boundaryParser.parse();
-        GenomicSet<GenomicElement> result = domainParser.parseBoundariesFromDomains();
-        assertEquals(expResult.get("b_1").toString(), result.get("b_1").toString());
-    }
-
+    
     /**
      * Test of parseTargetTermSet method, of class TabFileParser.
      */

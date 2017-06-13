@@ -219,7 +219,7 @@ public class TabFileParser {
         return cnvs;
     }
 
-    /**
+/**
      * Reads a TAB separated file with CNVs.
      * Assumes each line in the file to represent a CNV. The first
      * four columns should contain the following: chromosome, start, end, and name.
@@ -305,6 +305,87 @@ public class TabFileParser {
                 
             // create new {@link CNV} object
             CNV cnv = new CNV(chr, start, end, name, type, phenotypes, targetTerm);
+            
+            // add it to the set
+            cnvs.put(name, cnv);
+
+        }
+        return cnvs;
+    }
+    
+    /**
+     * Reads a TAB separated file with CNVs.
+     * Assumes each line in the file to represent a CNV. The first
+     * four columns should contain the following: chromosome, start, end, and name.
+     * One additional columns is assumed (column five) containing phenotypes 
+     * annotation of the patient in HPO terms separated by semicolon ';'.
+     * Note, the genomic coordinates are assumed in 0-based half-open format 
+     * like in the BED format specifications 
+     * (See http://genome.ucsc.edu/FAQ/FAQformat.html#format1).
+     * This function builds Term objects for all phenotype terms used to annotate the patient.
+     * Therefore the phenotype ontology has to be given as additional argument
+     * as an {@link PhenotypeData} object.
+     * 
+     * @param phenotypeData the phenotype ontology 
+     * 
+     * @return {@link GenomicSet} with {@link CNV} objects from the input file.
+     * 
+     * @throws IOException if file can not be read. 
+     */
+    public GenomicSet<CNV> parseCNVwithHpoTerms(PhenotypeData phenotypeData) throws IOException{
+                
+        // construct new set ofCNVs:
+        GenomicSet<CNV> cnvs = new GenomicSet<CNV>();
+        
+        // count IDs to give each ID a unique identifier, this will only be used
+        // in case of non-unique IDs
+        HashMap<String, Integer> countIDs = new HashMap<String, Integer>();
+
+        for ( String line : Files.readAllLines( path, StandardCharsets.UTF_8 ) ){
+            
+            // split line by TABs
+            String [] cols = line.split("\t");
+
+            // if line contains too few columns:
+            if (cols.length < 5 ){
+                throw new IOException(String.format(
+                        "[ERROR] while reading file '%s'. Wrong number of "
+                                + "columns in input line: '%s'", path, line));
+            }
+            
+            // parse columns
+            String chr = cols[0];
+            int start = Integer.parseInt(cols[1]);
+            int end = Integer.parseInt(cols[2]);
+            String name = cols[3];
+            
+            // In case of non-unique IDs, check if the name is already contained
+            if (! this.uniqueIDs){
+                if (countIDs.containsKey(name)){
+                    // increase counter
+                    countIDs.put(name, countIDs.get(name)+1);
+                    // append a number to the name to have a unique ID
+                    name = name + "_" + countIDs.get(name).toString();
+                // if the name is seen the first time
+                }else{
+                    // count it and append a 1
+                    countIDs.put(name, 1);
+                    name = name + "_1";
+                }
+            }
+                        
+            // parse phenotypes as set of Term objects
+            HashSet<Term> phenotypes = new HashSet<Term>();
+            
+            // for all term IDs in the phenotype column
+            for (String termID : cols[4].split(";")){
+                
+                // consturct a phenotype Term object and add it to the set
+                phenotypes.add(phenotypeData.getTermIncludingAlternatives(termID));
+            }
+            
+            // create new {@link CNV} object
+            CNV cnv = new CNV(chr, start, end, name, phenotypes);
             
             // add it to the set
             cnvs.put(name, cnv);
@@ -517,144 +598,6 @@ public class TabFileParser {
         return genes;
     }
 
-    /**
-     * Parses the topological domains and computes boundary regions from them.
-     * This method assumes non-overlapping domain regions. A boundary is defined
-     * as a region between two adjacent domains, that is smaller or equal than 
-     * 400 kb as in the Dixon et al. (2012) Nature publication.
-     * For compatibility with the interval tree from the jannovar package, the
-     * boundary regions will be artificially extended to one bp in case of
-     * zero-length boundary elements.
-     * 
-     * @return {@link GenomicSet} with boundary regions between domains.
-     * 
-     * @throws IOException if file can not be read. 
-     */
-    public GenomicSet<GenomicElement> parseBoundariesFromDomains() throws IOException{
-        
-        GenomicSet<GenomicElement> boundaries = new GenomicSet();
-        
-        // parse topological domains with the default parse method:
-        GenomicSet<GenomicElement> domains = parse();
-        
-        // sort domains by chromosom:
-        HashMap<String, ArrayList<GenomicElement>> chr2elementList = new HashMap();
-        for (GenomicElement d : domains.values()){
-            
-            String chr = d.getChr();
-            
-            // test if chr is not already in chr2element map:
-            if (! chr2elementList.containsKey(chr)){
-                chr2elementList.put(chr, new ArrayList<GenomicElement>());
-            }
-            
-            // fill map:
-            chr2elementList.get(chr).add(d);                        
-        }
-        
-        // for each chromosome sort domains by start position
-        for (String chr : chr2elementList.keySet()){
-            
-            ArrayList<GenomicElement> domainList = chr2elementList.get(chr);
-            
-            // sort domains by theire start coordinate
-            Collections.sort(domainList, GenomicElement.START_COORDINATE_ORDER);
-            
-            // iterate over all adjacent domain pairs
-            for(int i=0 ; i < domainList.size()-1 ; i++){
-                
-                GenomicElement dLeft = domainList.get(i);
-                GenomicElement dRight = domainList.get(i+1);
-                
-                // distance between domains in bp
-                int dist = dRight.getStart() - dLeft.getEnd() ;
-                
-                // consider only boundaries with size <= 400 kb
-                if (dist <= 400000){
-                    
-                    // construct boundary element
-                    String boundaryName = "b_" + (boundaries.size()+1);
-                    int bStart = dLeft.getEnd();
-                    int bEnd = dRight.getStart();
-                    
-                    // If boundary has length 0 it will be artifically extended to
-                    // one bp to the right for proper interval overlap calculations.
-                    if (bEnd - bStart == 0){
-                        bEnd += 1;
-                    }
-                    GenomicElement b = new GenomicElement(chr, bStart, bEnd, boundaryName);
-                    
-                    // add boundary to the set
-                    boundaries.put(boundaryName, b);
-                }
-            }
-        }
-        
-        return boundaries;
-    }
-    
-    /**
-     * Reads the target terms file and returns a list of {@link TargetTerm} objects, 
-     * that contains also the corresponding enhancer data.
-     * 
-     * @param phenotypeData phenotype data object to retrive the actual {@code Term} object from.
-     * @return an {@link ArrayList} of {@link TargetTerm} objects 
-     * @throws IOException 
-     */
-    public ArrayList<TargetTerm> parseTargetTerms(PhenotypeData phenotypeData) throws IOException{
-        
-        ArrayList<TargetTerm> targetTerms = new ArrayList<TargetTerm>();
-
-        // iterate over all lines in the file
-        for ( String line : Files.readAllLines(this.path, StandardCharsets.UTF_8 ) ){
-            
-            // ignore comments or header line
-            if (line.startsWith("#")){
-                continue;
-            }
-            
-            // split line by TABs
-            String [] cols = line.split("\t");
-            
-            // check if enougth columns are available
-            if (cols.length < 3 ){
-                throw new IOException(String.format(
-                        "[ERROR] while reading file '%s'. Wrong number of "
-                                + "columns in input line: '%s'"
-                                + "\nExpect at leaste 3 columns but found only %d.", path, line, cols.length));
-            }
-            
-            String termID = cols[0];
-            String name = cols[1];
-            String enhancerPathString = cols[2];
-            
-            // get Term object form phenotpye data.
-            Term term = phenotypeData.getTermIncludingAlternatives(termID);
-            
-            // parse the enhancer data
-            Path enhancerPath = Paths.get(enhancerPathString);
-            
-            // if path in target term file is relative
-            if (! enhancerPath.isAbsolute()){
-
-                // get the directory part of this target term file
-                Path dir = this.path.getParent();
-                
-                //join it with the realtive path to the enhancer files
-                enhancerPath = dir.resolve(enhancerPath);
-            }
-            
-            // parse enhancer data
-            TabFileParser enhancerParser = new TabFileParser(enhancerPath.toString());
-            GenomicSet<GenomicElement> enhancers = enhancerParser.parse();
-            
-            // construct a new TargetTerm object and append it to the result list
-            targetTerms.add(new TargetTerm(term, name, enhancers));
-        
-        }
-        
-        return targetTerms;
-    }
     
     /**
      * This function tests if the IDs or names in column 4 are unique to each element.
@@ -701,7 +644,5 @@ public class TabFileParser {
         // if no ID was seen before
         return true;
     }
-    
-    
     
 }

@@ -52,23 +52,6 @@ public class AnnotateCNVs {
      * @param phenotypeData 
      */
     
-
-    /**
-     * Annotates CNVs with overlapping boundaries.
-     * 
-     * @param cnvs  copy number variations (CVNs)
-     * @param boundaries Topological domain boundaries
-     */
-    public static void boundaryOverlap(GenomicSet<CNV> cnvs, GenomicSet<GenomicElement> boundaries){
-        
-        // iterate over all CNVs:
-        for (CNV cnv : cnvs.values()){
-            
-            GenomicSet<GenomicElement> overlap = boundaries.completeOverlap(cnv);
-            cnv.setBoundaryOverlap( overlap );
-        }
-    }
-    
     /**
      * Annotates all input CNVs with all genes that have any overlap with the CNV.
      * For each {@link CNV} object the variable {@link CNV.geneOverlap} is filled 
@@ -117,98 +100,6 @@ public class AnnotateCNVs {
             
         }
 
-    }
-   
-    /**
-     * Compute the phenogram score for genes overlapped by the input {@link CNV}s.
-     * It writes the memeber variables {@link CNV.overlapPhenogramScore} in each {@link CNV} object
-     * Note, this function assumes that the CNVs are annotated with overlped and
-     * adjacent genes by the functions {@link annotateOverlappedGenes}.
-     * 
-     * @param cnvs CNVs for which the phenogram score should be calculated.
-     * @param phenotypeData the phenotype ontology
-     */
-    public static void overlapPhenogramScore(GenomicSet<CNV> cnvs, PhenotypeData phenotypeData){
-        
-        for (CNV cnv: cnvs.values()){
-            // overlap PhenogramScore
-            cnv.setOverlapPhenogramScore( 
-                phenotypeData.phenoGramScore( cnv.getPhenotypes(), cnv.getGenesInOverlap()) 
-            );
-        }
-    }
-    
-
-    /**
-     * This function defines the overlapped inner-domain regions by the CNV.
-     * There is a region for each CNV breakpoint that is defined from the break-point
-     * to the next boundary that is overlapped by the cnv.
-     * <pre>
-Domains:               /'''''''''\   /'''\  /''''''''''''\
-Boundary:                         ---     --       
-CNV:                         ======================
-overlappedDomainRegions:     *****          *******
-     </pre>
-     * These regions are needed to interpret tandem duplications and inversions for 
-     * enhancer adoption mechanisms (e.g relevant enhancer in left overlap region
-     * might come close and interact with a duplicated gene in the right overlapped region).
-     * 
-     * @param cnvs
-     * @param domains 
-     */
-    public static void defineOverlappedDomainRegions(GenomicSet<CNV> cnvs, GenomicSet<GenomicElement> domains){
-        
-        for (CNV cnv: cnvs.values()){
-            
-            int start = cnv.getStart();
-            int end = cnv.getEnd();
-            String chr = cnv.getChr();
-
-            // check if CNV ovelaps at leaste one boundary element
-            if (cnv.hasBoundaryOverlap()){
-                
-                // get domain regions underling the left (start) and right (end) borders of the CNV
-                GenomicSet<GenomicElement> leftDomains = domains.anyOverlap(new GenomicElement(chr, start-1, start, "cnvStart"));
-                GenomicSet<GenomicElement> rightDomains = domains.anyOverlap(new GenomicElement(chr, end, end+1, "cnvEnd"));
-
-                // if left CNV border lies not in a domain region (but in boundary or unorganized chromatin),
-                // an zero length region will be defined.
-                if (leftDomains.isEmpty()){
-                    cnv.setLeftOverlappedDomainRegion(new GenomicElement(chr, start, start, "leftOverlapped"));
-                }else{
-
-                    // get end of overlapped region as end of the domain overlapped by the CNV start
-                    GenomicElement leftDomain = leftDomains.values().iterator().next();
-                    int leftOverlapRegionEnd = leftDomain.getEnd();
-
-                    // construct element for the left adjacent regions
-                    cnv.setLeftOverlappedDomainRegion(new GenomicElement(chr, cnv.getStart(), leftOverlapRegionEnd, "leftOverlapped"));
-                }
-
-                // same for the right site:
-                if(rightDomains.isEmpty()){
-                    // zero-lenght region
-                    cnv.setRightOverlappedDomainRegion(new GenomicElement(chr, end, end, "rightOverlapped"));
-                }else{
-
-                    // get start of the query region as start of right adjacten domain
-                    GenomicElement rightDomain = rightDomains.values().iterator().next();
-                    int rightOverlapRegionStart = rightDomain.getStart();
-
-                    // construct query element for the right adjacent regions
-                    cnv.setRightOverlappedDomainRegion( new GenomicElement(chr, rightOverlapRegionStart, cnv.getEnd(), "rightOverlapped"));
-
-                }
-            
-            // in case of no boundary overlap set default regions of zero size
-            }else{
-                cnv.setLeftOverlappedDomainRegion(new GenomicElement(chr, start, start, "leftOverlapped"));
-                cnv.setRightOverlappedDomainRegion(new GenomicElement(chr, end, end, "rightOverlapped"));
-            }
-        }
-    }
-    
+    }      
  
-    
-    
 }
