@@ -118,7 +118,6 @@ public class AnnotateCNVs {
         }
 
     }
-    
    
     /**
      * Compute the phenogram score for genes overlapped by the input {@link CNV}s.

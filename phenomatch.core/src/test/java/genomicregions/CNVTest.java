@@ -97,20 +97,6 @@ public class CNVTest {
     }
 
     /**
-     * Test of toOutputLine method, of class CNV.
-     * 
-     */
-    @Test
-    public void testToOutputLine() {
-        System.out.println("toOutputLine");
-        
-        CNV cnvB = new CNV("chr1", 10, 101, "cnvB", "loss", cnv1.getPhenotypes(), cnv1.getTargetTerm());
-        String expResult = "chr1\t10\t101\tcnvB\tloss\tEP:0000006\tEP:0000005\t0\t.\t.\t.\t.\t.\t.\t.\t.\t.";
-        String result = cnvB.toOutputLine();
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of getOutputHeaderLine method, of class CNV.
      *         return super.getOutputHeaderLine()
                 + "\t" 

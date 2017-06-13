@@ -24,35 +24,22 @@ public class ArgumentParser {
     public static Map<String, Object> parseCommnadLineArguments(String [] args) throws ArgumentParserException{
         
         // build and argument parser and set its properties
-        net.sourceforge.argparse4j.inf.ArgumentParser argsParser = ArgumentParsers.newArgumentParser("Topodombar")
-                .description("Phenotypic analysis of structural variations in the genome "
-                        + "and topological domain boundaries.")
-                .epilog("2014 by Jonas Ibn-Salem <ibnsalem@molgen.mpg.de>")
+        net.sourceforge.argparse4j.inf.ArgumentParser argsParser = ArgumentParsers.newArgumentParser("Phenomatch")
+                .description("Phenotypic analysis of genes in input regions and "
+                        + "phenotypes associated to individuals.")
+                .epilog("2014 by Jonas Ibn-Salem <j.ibn-salem@uni-mainz.de>")
                 .defaultHelp(true)
                 .version("${prog} 0.0.1");    
         //TODO remove hard-coded version. e.g. by this approach:http://stackoverflow.com/questions/2469922/generate-a-version-java-file-in-maven
+        
         argsParser.addArgument("-i", "--input-file").required(true)
-                .help("input file with copy number variations (CNVs) in TAB separated file format");
-        argsParser.addArgument("-d", "--domains").required(true)
-                .help("topological domains in BED file format. Non-overlapping domain regions are assumed");
+                .help("input file with genomic regions in TAB separated file format");
         
+        argsParser.addArgument("-d", "--domains").required(false)
+                .help("Topologically associating domains (TADs) in BED file format. "
+                        + "Non-overlapping regions are assumed");        
         argsParser.addArgument("-g", "--genes").required(true).help("Genes in BED like format");
-        
-        // mutually exclusive arguments (-e |-t) for a single enhancer file or a list of target terms:
-        MutuallyExclusiveGroup enhancerArgs = argsParser.addMutuallyExclusiveGroup("enhancers").required(true);
-        enhancerArgs.addArgument("-e", "--enhancers").help("Enhancers in BED like format");
-        
-        enhancerArgs.addArgument("-t", "--target-terms").help("tab separated file holding each target term (tissue) per line. "
-                + "Columns should hold the corresponding target term as HPO term"
-                + " ID, a unique tissue name, and the file paht to the corresponding "
-                + "enhancer data (the file path may be absolut or relative to this file)");     
-
-        argsParser.addArgument("-p", "--phenotype")
-                .help("the term ID of a phenotpye that will be used to annotate "
-                        + "the entire cohort of input CNVs (may only be used "
-                        + "with -e option but not with -t)");
-
-        
+ 
         argsParser.addArgument("-O", "--phenotype-ontology").required(true)
                .help("the phenotype ontology in OBO file format");
         argsParser.addArgument("-a", "--annotation-file").required(true)
@@ -61,17 +48,10 @@ public class ArgumentParser {
         argsParser.addArgument("-o", "--output-file").required(true)
                 .help("output file to which the annotated CNVs will be written");
         // add optional parameters
-        argsParser.addArgument("--adjacent-region-size").type(Integer.class)
-                .setDefault(400000).help("size in base pairs (bp) of adjacent regions");
-        argsParser.addArgument("--filter-out").help("benign control CNVs used to filter out input CNVs that overlap with this controls.");
-        argsParser.addArgument("--overlap-function").choices(new String [] {"any", "complete", "reciprocal"} )
-                .setDefault("reciprocal").help("overlap function used to filter out CNVs that overlap with the contorle data set.");
-        argsParser.addArgument("--overlap-fraction").type(Double.class).choices(Arguments.range(0, 1))
-                .setDefault(0.5).help("minimal fraction of reciprocal overlap. This will be ignored for 'complete' or 'any' overlap functions. ");
-        argsParser.addArgument("--permut-patients").type(Integer.class).metavar("N")
-                .setDefault(0).help("Permute the phenotype annotations of the patients N time and run whole analysis as control. ");
         argsParser.addArgument("--permut-genes").type(Integer.class).metavar("N")
-                .setDefault(0).help("Permute the phenotype annotations of genes associated to human phenotypes N time and run whole analysis as control. ");
+                .setDefault(0).help("Permute the phenotype annotations of genes "
+                        + "associated to human phenotypes N time and run "
+                        + "whole analysis as control. ");
         argsParser.addArgument("-v", "--version").action(Arguments.version());
         // build objects to parse the commandline to
 

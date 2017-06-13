@@ -334,7 +334,7 @@ public class CNV extends GenomicElement {
                     if (maxGeneScore > maxScore){
                         maxScore = maxGeneScore;
                     }
-                }
+                }               
             }
         }
         

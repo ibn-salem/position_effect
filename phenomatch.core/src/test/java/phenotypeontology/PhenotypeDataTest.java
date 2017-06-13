@@ -115,9 +115,10 @@ public class PhenotypeDataTest {
     /**
      * Test of phenoMatchScore method, of class PhenotypeData.
      */
-    @Ignore
+    // @Ignore
     @Test
     public void testPhenoMatchScore() throws IOException {
+        
         System.out.println("phenoMatchScore");
         HashSet<Term> terms = new HashSet<Term>();
         terms.add(phenotypeData.getTermIncludingAlternatives("EP:06"));
@@ -130,6 +131,18 @@ public class PhenotypeDataTest {
         geneA.setPhenotypeTerms( new HashSet<Term>() );
         geneA.addPhenotypeTerm(phenotypeData.getTermIncludingAlternatives("EP:04"));
         geneA.addPhenotypeTerm(phenotypeData.getTermIncludingAlternatives("EP:05"));
+        
+        System.out.println("terms: " + terms);
+        System.out.println("gene A phenotypes: " + geneA.getPhenotypeTerms());
+        // DEBUG IC of terms in example data
+        System.out.println("EP:00: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:00")));
+        System.out.println("EP:01: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:01")));
+        System.out.println("EP:02: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:02")));
+        System.out.println("EP:03: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:03")));
+        System.out.println("EP:04: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:04")));
+        System.out.println("EP:05: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:05")));
+        System.out.println("EP:06: " + phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:06")));
+        
         
         // expect sum IC of most specific common terms for each gene phenotype
         double expResult = phenotypeData.getIC(phenotypeData.getTermIncludingAlternatives("EP:04"));
@@ -144,7 +157,7 @@ public class PhenotypeDataTest {
      * Test of phenoGramScore method, of class PhenotypeData.
      */
     @Ignore
-    @Test
+//    @Test
     public void testPhenoGramScore() throws IOException {
         System.out.println("phenoGramScore");
         

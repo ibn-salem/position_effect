@@ -17,19 +17,14 @@ import io.TabFileParser;
 import io.TabFileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ontologizer.go.Term;
 import org.apache.commons.lang3.StringUtils;
 import permutation.PermutedGenePhenotypes;
-import permutation.PermutedPatientPhenotypes;
 import phenotypeontology.PhenotypeData;
-import phenotypeontology.TargetTerm;
 
 
 /**
@@ -66,12 +61,12 @@ public class Phenomatch {
     
     private String outputPath;
     
-    private Integer patientPermutations;
     private Integer genePermutations;
+    
     private String genesPath;
     
     /**
-     * Constructor for an instance of the {@link Topodombar} program with input 
+     * Constructor for an instance of the {@link Phenomatch} program with input 
      * data and parameters.
      * 
      * @param argMap a {@link Map} holding the input data and parameters
@@ -86,32 +81,22 @@ public class Phenomatch {
         String cnvPath = (String) argMap.get("input_file");
         String domainPath = (String) argMap.get("domains");
         this.genesPath = (String) argMap.get("genes");
-        String enhancersPath = (String) argMap.get("enhancers");
-        String targetTermPath = (String) argMap.get("target_terms");
-        this. outputPath = (String) argMap.get("output_file");
+        this.outputPath = (String) argMap.get("output_file");
         
         // parse optional arguments:
-        this.regionSize = (Integer) argMap.get("adjacent_region_size");
-        String controlPath = (String) argMap.get("filter_out");
-        String overlapFunc = (String) argMap.get("overlap_function");
-        Double overlapFraction = (Double) argMap.get("overlap_fraction");
-        this.patientPermutations = (Integer) argMap.get("permut_patients");
         this.genePermutations = (Integer) argMap.get("permut_genes");
-        // TODO remove path variable as member and rewrite permutations of gene phenotypes
         
         // read the phenotype ontology
         this.phenotypeData = new PhenotypeData(ontologyPath, annotationPath);
-        System.out.println("[INFO] Topodombar: Ontology and annotation table were parsed.");
+        System.out.println("[INFO] Ontology and annotation table were parsed.");
 
         ////////////////////////////////////////////////////////////////////////
         //  CNVs
         ////////////////////////////////////////////////////////////////////////
 
         // read CNV data from input file:
-        TabFileParser cnvParser = new TabFileParser(cnvPath);
-
-        // if global phenotype for the entire cohort is given:
-        cnvs = cnvParser.parseCNVwithGlobalTerm(null);
+        TabFileParser cnvParser = new TabFileParser(cnvPath);        
+        cnvs = cnvParser.parseCNVwithPhenotypeAnnotation(this.phenotypeData);
         
         ////////////////////////////////////////////////////////////////////////
         //  Domains and Boundaries
@@ -230,7 +215,7 @@ public class Phenomatch {
         TabFileWriter geneOutWriterOl = new TabFileWriter(outputPath + 
                 ".permutGenePT_" + this.genePermutations + ".overlapped_genes.txt");
         geneOutWriterOl.writeLines(outLinesOl);
-        System.out.println("[INFO] Topodombar: Wrote all overlapped genes from "
+        System.out.println("[INFO] Wrote all overlapped genes from "
                 + "permutated gene to phenotype annotation to output file "
                 + "'"+this.outputPath+".permutGenePT_" + this.genePermutations + ".overlapped_genes.txt'.");
 
@@ -258,13 +243,13 @@ public class Phenomatch {
 
         ArrayList<String> outLines = getOverlappedGenesOutput(this.cnvs, this.phenotypeData);
         outWriterOl.writeLines(outLines);
-        System.out.println("[INFO] Topodombar: Wrote all overlapped genes to output file '"+this.outputPath+".overlapped_genes.txt'.");
+        System.out.println("[INFO] Wrote all overlapped genes to output file '"+this.outputPath+".overlapped_genes.txt'.");
 
         TabFileWriter<CNV> outWriterOlTAD = new TabFileWriter<CNV>(this.outputPath + ".genes_in_overlapped_TADs.txt");
 
         ArrayList<String> outLinesTADs = getGenesInOverlappedTADs(this.cnvs, this.phenotypeData);
         outWriterOlTAD.writeLines(outLinesTADs);
-        System.out.println("[INFO] Topodombar: Wrote all genes in overlapped TADs to output file '"+this.outputPath+".genes_in_overlapped_TADs.txt'.");
+        System.out.println("[INFO] Wrote all genes in overlapped TADs to output file '"+this.outputPath+".genes_in_overlapped_TADs.txt'.");
        
     }    
 

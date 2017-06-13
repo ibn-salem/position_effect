@@ -23,7 +23,7 @@ public class PhenomatchCMD {
             // parse commandline arguments
             Map<String, Object> argMap = ArgumentParser.parseCommnadLineArguments(args);
             
-            // run Topodombar tool with arguments:
+            // run Phenomatch tool with arguments:
             Phenomatch phenomatch = new Phenomatch(argMap);
             
             phenomatch.runAnalysis();

@@ -263,10 +263,10 @@ public class PhenotypeData  implements Cloneable{
         
             // take max across gene terms
 //            System.out.println("DEBUG: return max across gene terms!");
-            //similarity += bestGeneTermScore;
-            if (bestGeneTermScore >= similarity){
-                similarity = bestGeneTermScore;
-            }
+            similarity += bestGeneTermScore;
+//            if (bestGeneTermScore >= similarity){
+//                similarity = bestGeneTermScore;
+//            }
         }
 
         return similarity;
@@ -284,7 +284,7 @@ public class PhenotypeData  implements Cloneable{
      * @return phenomatch score
      */
     public ArrayList<TermPair> phenoMatchScoreWithMatching(HashSet<Term> terms, Gene gene){
-        
+                
         // initialize matching
         ArrayList<TermPair> matching = new ArrayList<>();
         
