@@ -1,7 +1,7 @@
 # position_effect
 **Prediction of Position Effects of Apparently Balanced Human Chromosome Rearrangements**
 
-The scirpts in this repository document the computational analysis in the followinng manuscript:
+The scripts in this repository document the computational analysis in the followinng manuscript:
 Zepeda-Mendoza and Ibn-Salem at al. 2017 "Computational Prediction of Position Effects of
 Apparently Balanced Human Chromosome Rearrangements" 
 
@@ -116,7 +116,7 @@ This scripts takes two files and the window size aroud breakpoints in bp as inpu
 Subjects with more than one HPO annotation have multiple lines in the file with the same ID in the first column
 
 The second input file `BREAKPOINTS_BED` is a BED file wiht breakpoint locations.
-In the fourth column should contain the patient ID with additinaol breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
+In the fourth column should contain the patient ID with additional breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
 
 The output file `OUTPUT_FILE` contains all breakpoints with an additional column with a comma-separated list of phenotypes.
 
@@ -142,7 +142,7 @@ java -jar phenomatch.jar  \
 
 ```
 
-Use `-h` option for more usage information and other options including permutation of phenotypes as contorl and providing TAD coordinates for target gene identification.
+Use `-h` option for more usage information and other options including permutation of phenotypes as control and providing TAD coordinates for target gene identification.
 The calculation of phenomatch score is described in [Ibn-Salem and Köhler et al. 2014, Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1).
 
 **Example:**
@@ -157,7 +157,7 @@ java -jar bin/phenomatch.jar \
 ```
 
 The HPO files in `data/data_files.zip` are not the latest version and rather provided for reproducibility of the above mentioned manuscript. 
-More recent versions of HPO and gene phenotype annotationas can be downloaded from these URLs:
+More recent versions of HPO and gene phenotype annotations can be downloaded from these URLs:
 
 + http://purl.obolibrary.org/obo/hp.obo
 + http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt
@@ -248,7 +248,7 @@ The output file has the following columns:
 + Pheno_percentile
 + MaxPheno_percentile
 
-Because ClinGen haplo/triplo-sensitivity scores are indicated with ranges from 0 (not evidence) to 30 (known), we ask the program users to give weights to the values they want to analyze (i.e. if you want to consider only score values from 2 and above (recommended), give those regions a final table value of 1. You can either do this in the ClinGen file by susbstituting the desires scores with 1 and making everything else a 0, or by adding an extra column to the excel file and making this change with the IF selection formula). The same applies to the phenomatch and max_phenomatch percentiles (i.e. if you want to include only the top quartile, assign a 1 to everything with >=0.75 percentile value). 
+Because ClinGen haplo/triplo-sensitivity scores are indicated with ranges from 0 (not evidence) to 30 (known), we ask the program users to give weights to the values they want to analyze (i.e. if you want to consider only score values from 2 and above (recommended), give those regions a final table value of 1. You can either do this in the ClinGen file by susbstituting the desired scores with 1 and making everything else a 0, or by adding an extra column to the excel file and making this change with the IF selection formula). The same applies to the phenomatch and max_phenomatch percentiles (i.e. if you want to include only the top quartile, assign a 1 to everything with >=0.75 percentile value). 
 
 Finally, after adding these 0 or 1 selection values to the haplo, triplo, and phenomatch percentiles, you can either use the PERC+DHS+TAD+HAPLO+TRIPLOor the PERC+DHS+2Mb+HAPLO+TRIPLO ranking criteria similar to Table S4A from the manuscript. Please refer to this table if you have any further questions, the fields are self-explanatory and compliment what was described in this section. If still in doubt, please contact Cinthya Zepeda (cinthya.zepeda.m@gmail.com).
 
