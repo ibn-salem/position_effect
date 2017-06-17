@@ -1,7 +1,7 @@
 # position_effect
 **Prediction of Position Effects of Apparently Balanced Human Chromosome Rearrangements**
 
-The scirpts in this repository document the computational analysis in the followinng manuscript:
+The scripts in this repository document the computational analysis in the followinng manuscript:
 Zepeda-Mendoza and Ibn-Salem at al. 2017 "Computational Prediction of Position Effects of
 Apparently Balanced Human Chromosome Rearrangements" 
 
@@ -22,14 +22,21 @@ perl dgap_features_check.pl \
 
 
 **Example:**
+
+To follow the examples using the provided data, extract `data/data_files.zip` into the `data` folder:
+
 ```
-perl dgap_features_check.pl \
-  -f non_coding_DGAP_positions.bed \
-  -i HI_Predictions_Version3.bed \
-  -g GRCh37.p13_ensembl_genes.txt \
-  -c hESC_hg37_domains.bed \
+unzip data/data_files.zip -d data/
+```
+
+```
+perl perl/dgap_features_check.pl \
+  -f data/non_coding_DGAP_positions.bed \
+  -i data/HI_Predictions_Version3.bed \
+  -g data/GRCh37.p13_ensembl_genes.txt \
+  -c data/hESC_hg37_domains.bed \
   -n 3000000 \
-  -o ~/Desktop/Position_Effects_Analysis
+  -o .
 ```
 The GENOMIC_REGIONS file needs to be in a .bed format with columns chr, start, end, case_id. 
 This script generates two files, HiC_list_DGAP.txt (a list of overlapped Hi-C domains by the rearrangement breakpoints) and HI_list_DGAP.txt. 
@@ -79,9 +86,9 @@ perl enh_promoter_disruption_checker_DGAP.pl \
 **Example:**
 
 ```
-perl enh_promoter_disruption_checker_DGAP.pl \
-  -f non_coding_DGAP_positions.bed \
-  -d genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 \
+perl perl/enh_promoter_disruption_checker_DGAP.pl \
+  -f data/non_coding_DGAP_positions.bed \
+  -d data/genomewideCorrs_above0.7_promoterPlusMinus500kb_withGeneNames_32celltypeCategories.bed8 \
   -a 3000000 \
   -o DHS_promoter_broken_DGAP.txt
 ```
@@ -97,9 +104,10 @@ Here phenomatch scores are calculated for genes located close to rearrangment br
 Rscript combine_breakpoints_and_phenotypes.R \
   SUBJECT_TO_PHENOTYPES \
   BREAKPOINTS_BED \
+  WINDOW_SIZE \
   OUTPUT_FILE
 ```
-This scripts takes two files as input:
+This scripts takes two files and the window size aroud breakpoints in bp as input:
 `SUBJECT_TO_PHENOTYPES` is a tab delimited file with two columns and column headers:
 
 + **ID** the subject ID
@@ -108,55 +116,53 @@ This scripts takes two files as input:
 Subjects with more than one HPO annotation have multiple lines in the file with the same ID in the first column
 
 The second input file `BREAKPOINTS_BED` is a BED file wiht breakpoint locations.
-In the fourth column should contain the patient ID with additinaol breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
+In the fourth column should contain the patient ID with additional breakpoint identifiers separated by undersocre `_`. For example `DGAP111_A` and `DGAP111_B`.
 
 The output file `OUTPUT_FILE` contains all breakpoints with an additional column with a comma-separated list of phenotypes.
 
 **Example:**
 
 ```
-Rscript combine_breakpoints_and_phenotypes.R \
-  HPO_distal_cases.txt \
-  non_coding_DGAP_positions.bed \
-  breakpoint_window_with_HPO.bed
+Rscript R/combine_breakpoints_and_phenotypes.R \
+  data/HPO_distal_cases.txt \
+  data/non_coding_DGAP_positions.bed \
+  6000000 \
+  breakpoint_window_with_HPO.6MB_win.bed
 ```
 
 ### b) Compute phenomatch scores
 
 ```
-java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
-                  -i INPUT_FILE \
-                  -d DOMAINS \
-                  -g GENES \
-                  -O PHENOTYPE_ONTOLOGY
-                  -a ANNOTATION_FILE \
-                  -e ENHANCERS \
-                  -o OUTPUT_FILE
+java -jar phenomatch.jar  \
+    -i INPUT_FILE \
+    -g GENES \
+    -O PHENOTYPE_ONTOLOGY
+    -a ANNOTATION_FILE \
+    -o OUTPUT_FILE
 
 ```
 
-Use `-h` option for more usage information and other options including permutation anlaysis.
-The calculation of phenomatch score is described in [Ibn-Salem et al. 2014](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1) and the source code of the topodombar tool is available [here](https://github.com/charite/topodombar/tree/java-implementation).
+Use `-h` option for more usage information and other options including permutation of phenotypes as control and providing TAD coordinates for target gene identification.
+The calculation of phenomatch score is described in [Ibn-Salem and Köhler et al. 2014, Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0423-1).
 
 **Example:**
 
 ```
-java -jar bin/topodombar.commandline-0.0.1-SNAPSHOT-jar-with-dependencies.jar  \
-    -i breakpoint_window_with_HPO.bed.6MB_win.bed \
-    -d hESC_hg37_domains.bed  \
-    -g knownGene.txt.entrez_id.tab.unique \
-    -O hp.obo \
-    -a ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt \
-    -e Fetal_Brain.tab \
-    -o breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out
+java -jar bin/phenomatch.jar \
+  -i breakpoint_window_with_HPO.6MB_win.bed \
+  -g data/knownGene.txt.entrez_id.tab.unique \
+  -O data/hp.obo \
+  -a data/ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt  \
+  -o breakpoint_window_with_HPO.6MB_win.bed.phenomatch
 ```
 
-The HPO files `hpo.obo`and `ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt` can be downloaded from the following URLs:
+The HPO files in `data/data_files.zip` are not the latest version and rather provided for reproducibility of the above mentioned manuscript. 
+More recent versions of HPO and gene phenotype annotations can be downloaded from these URLs:
 
 + http://purl.obolibrary.org/obo/hp.obo
 + http://compbio.charite.de/jenkins/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt
 
-The tool will create several output files with the same prefix. The ouput file `breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt` contains phenomatch scores.
+The tool will create an output file `breakpoint_window_with_HPO.6MB_win.bed.phenomatch.overlapped_genes.txt` containing phenomatch scores of genes close the the breakpoints.
 
 ## STEP 4:
 You can calculate the percentile for the phenomatch and max_phenomatch scores by using the R script get_percentiles_DGAP_all.r
@@ -169,8 +175,8 @@ Rscript --vanilla get_percentiles_DGAP_all.r PHENO_FILE > OUTPUT_FILENAME
 
 **Example:**
 ```
-Rscript --vanilla get_percentiles_DGAP_all.r \
-  breakpoint_window_with_HPO.bed.6MB_win.bed.annotated.out.overlapped_genes.txt \
+Rscript --vanilla R/get_percentiles_DGAP_all.r \
+  breakpoint_window_with_HPO.6MB_win.bed.phenomatch.overlapped_genes.txt \
   > percentiles_6Mb_pheno_maxpheno.txt
 ```
 
@@ -191,12 +197,12 @@ perl dgap_final_table_maker.pl \
 
 **Example:**
 ```
-perl dgap_final_table_maker.pl \
+perl perl/dgap_final_table_maker.pl \
   -f HI_list_DGAP.txt \
-  -c hESC_hg37_domains.bed \
+  -c data/hESC_hg37_domains.bed \
   -d DHS_promoter_broken_breakpDGAP.txt \
-  -h ClinGen_haploinsufficiency_gene.bed \
-  -t ClinGen_triplosensitivity_gene.bed \
+  -h data/ClinGen_haploinsufficiency_gene.bed \
+  -t data/ClinGen_triplosensitivity_gene.bed \
   -m percentiles_6Mb_pheno_maxpheno.txt \
   -o DGAP_table_summary.txt
 ```
@@ -242,10 +248,9 @@ The output file has the following columns:
 + Pheno_percentile
 + MaxPheno_percentile
 
-Because ClinGen haplo/triplo-sensitivity scores are indicated with ranges from 0 (not evidence) to 30 (known), we ask the program users to give weights to the values they want to analyze (i.e. if you want to consider only score values from 2 and above (recommended), give those regions a final table value of 1. You can either do this in the ClinGen file by susbstituting the desires scores with 1 and making everything else a 0, or by adding an extra column to the excel file and making this change with the IF selection formula). The same applies to the phenomatch and max_phenomatch percentiles (i.e. if you want to include only the top quartile, assign a 1 to everything with >=0.75 percentile value). 
+Because ClinGen haplo/triplo-sensitivity scores are indicated with ranges from 0 (not evidence) to 30 (known), we ask the program users to give weights to the values they want to analyze (i.e. if you want to consider only score values from 2 and above (recommended), give those regions a final table value of 1. You can either do this in the ClinGen file by susbstituting the desired scores with 1 and making everything else a 0, or by adding an extra column to the excel file and making this change with the IF selection formula). The same applies to the phenomatch and max_phenomatch percentiles (i.e. if you want to include only the top quartile, assign a 1 to everything with >=0.75 percentile value). 
 
 Finally, after adding these 0 or 1 selection values to the haplo, triplo, and phenomatch percentiles, you can either use the PERC+DHS+TAD+HAPLO+TRIPLOor the PERC+DHS+2Mb+HAPLO+TRIPLO ranking criteria similar to Table S4A from the manuscript. Please refer to this table if you have any further questions, the fields are self-explanatory and compliment what was described in this section. If still in doubt, please contact Cinthya Zepeda (cinthya.zepeda.m@gmail.com).
 
 You can replace the haploinsufficiency file (ClinGen_haploinsufficiency_gene.bed, ClinGen), the triplosensitivity file (ClinGen_triplosensitivity_gene.bed, ClinGen) and the HiC domains file (hESC_hg37_domains.bed, Dixon et al., 2012) with more recent versions or other custom files as long as the column structure is maintained.
-
 
