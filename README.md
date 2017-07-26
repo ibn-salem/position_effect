@@ -1,9 +1,9 @@
 # position_effect
 **Prediction of Position Effects of Apparently Balanced Human Chromosome Rearrangements**
 
-The scripts in this repository document the computational analysis in the followinng manuscript:
-Zepeda-Mendoza and Ibn-Salem at al. 2017 "Computational Prediction of Position Effects of
-Apparently Balanced Human Chromosome Rearrangements" 
+The scripts in this repository document the computational analysis in the followinng study:
+[Zepeda-Mendoza and Ibn-Salem at al. "Computational Prediction of Position Effects of
+Apparently Balanced Human Chromosome Rearrangements". Am. J. Hum. Genet. 2017](http://www.cell.com/ajhg/abstract/S0002-9297(17)30246-X).
 
 To analyze your own genomic regions for position effects, please follow the steps in order. All included datasets are in hg19 version.
 
