@@ -14,7 +14,7 @@
         annotated to genes.
     </description>
  
-    <repositories>
+<!--    <repositories>
         <repository>
             <id>ontologizer-mvn</id>
             <url>https://raw.githubusercontent.com/sba1/ontologizer-mvn/master/</url>
@@ -23,7 +23,7 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>    
-    </repositories>
+    </repositories>-->
     <!--<repositories>-->
 <!--        <repository>
             <id>nexus.phenotips.org</id>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
-            <version>0.15</version>
+            <version>0.36</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -56,11 +56,29 @@
             <version>3.1</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>de.ontologizer</groupId>
             <artifactId>ontologizer</artifactId>
             <version>0.0.2-SNAPSHOT</version>
+        </dependency>-->
+<!--         https://mvnrepository.com/artifact/de.ontologizer/ontologizerlib-core 
+        <dependency>
+            <groupId>de.ontologizer</groupId>
+            <artifactId>ontologizerlib-core</artifactId>
+            <version>0.1</version>
         </dependency>
+         https://mvnrepository.com/artifact/de.ontologizer/ontologizerlib-io 
+        <dependency>
+            <groupId>de.ontologizer</groupId>
+            <artifactId>ontologizerlib-io</artifactId>
+            <version>0.1</version>
+        </dependency>-->
+        <dependency>
+            <groupId>ontologizer</groupId>
+            <artifactId>ontologizer</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>        
+        
         <!--        <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>ontologizer-parent</artifactId>
