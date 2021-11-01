@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import ontologizer.go.OBOParser;
 import ontologizer.go.OBOParserException;
-import ontologizer.go.OBOParserFileInput;
+//import ontologizer.go.OBOParserFileInput;
 import ontologizer.go.Ontology;
 import ontologizer.go.Term;
 import ontologizer.go.TermContainer;
@@ -112,7 +112,8 @@ public class PhenotypeData  implements Cloneable{
     public PhenotypeData(String oboFilePath, String annotationFilePath) throws IOException{
         
         // build oboParser object for the input ontology file
-        OBOParser oboParser = new OBOParser(new OBOParserFileInput(oboFilePath));
+        // OBOParser oboParser = new OBOParser(new OBOParserFileInput(oboFilePath));
+        OBOParser oboParser = new OBOParser(oboFilePath);
         
         // parse obo file
         try {
