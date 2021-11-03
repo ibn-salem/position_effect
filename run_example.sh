@@ -42,6 +42,15 @@ java -jar bin/phenomatch.jar \
   -a data/ALL_SOURCES_TYPICAL_FEATURES_genes_to_phenotype.txt  \
   -o breakpoint_window_with_HPO.6MB_win.bed.phenomatch
 
+# java -jar bin/phenomatch.jar \
+#   -i breakpoint_window_with_HPO.6MB_win.bed \
+#   -g data/knownGene.txt.entrez_id.tab.unique \
+#   -O data_raw/hp.obo \
+#   -a data_raw/genes_to_phenotype.txt \
+#   -o breakpoint_window_with_HPO.6MB_win.bed.phenomatch
+
+
+
 #=======================================================================
 # step 4
 #=======================================================================

@@ -372,10 +372,15 @@ public class PhenotypeData  implements Cloneable{
                     String firstLine = in.readLine();
                     boolean isHpo = false;
                     boolean isUpheno = false;
+                    // updated annotation format since 2019 for genes_to_phenotype.txt file according to https://hpo.jax.org/app/download/annotation
+                    boolean isHpoa = false;
+                    
                     if (firstLine.startsWith("#Entrez Gene ID of human gene ; Gene symbol ; Annotated Uberpheno")) {
                             isUpheno = true;
                     } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-Name<tab>HPO-Ter")) {
                             isHpo = true;
+                    } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-ID<tab>HPO-Term-Name<tab>Frequency-Raw<tab>Frequency-HPO")) {
+                            isHpoa = true;
                     } else {
                             throw new RuntimeException("Can't handle annotation-file format!");
                     }
@@ -404,6 +409,11 @@ public class PhenotypeData  implements Cloneable{
                                     split = tabstopp.split(line);
                                     entrezId = split[0];
                                     annotatedTermId = split[3];
+                            }
+                            if (isHpoa) {
+                                    split = tabstopp.split(line);
+                                    entrezId = split[0];
+                                    annotatedTermId = split[2];
                             }
 
                             Term t = getOntology().getTermIncludingAlternatives(annotatedTermId);

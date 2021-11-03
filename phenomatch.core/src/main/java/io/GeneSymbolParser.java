@@ -51,10 +51,14 @@ public class GeneSymbolParser {
             String firstLine = in.readLine();
             boolean isHpo = false;
             boolean isUpheno = false;
+            // updated annotation format since 2019 for genes_to_phenotype.txt file according to https://hpo.jax.org/app/download/annotation
+            boolean isHpoa = false;            
             if (firstLine.startsWith("#Entrez Gene ID of human gene ; Gene symbol ; Annotated Uberpheno")) {
                     isUpheno = true;
             } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-Name<tab>HPO-Ter")) {
                     isHpo = true;
+            } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-ID<tab>HPO-Term-Name<tab>Frequency-Raw<tab>Frequency-HPO")) {
+                    isHpoa = true;                    
             } else {
                     throw new IOException("Can't handle annotation-file format!");
             }
@@ -78,6 +82,13 @@ public class GeneSymbolParser {
                 // in case of Uberpheno annotaion format
                 if (isUpheno){
                     String [] cols = line.split(";");
+                    entrezID = cols[0];
+                    symbol = cols[1];                    
+                }
+
+                // in case of HPOA annotaion format
+                if (isHpoa){
+                    String [] cols = line.split("\t");
                     entrezID = cols[0];
                     symbol = cols[1];                    
                 }
