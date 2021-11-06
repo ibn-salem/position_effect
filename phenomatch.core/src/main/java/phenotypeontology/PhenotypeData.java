@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import ontologizer.go.OBOParser;
 import ontologizer.go.OBOParserException;
-import ontologizer.go.OBOParserFileInput;
+//import ontologizer.go.OBOParserFileInput;
 import ontologizer.go.Ontology;
 import ontologizer.go.Term;
 import ontologizer.go.TermContainer;
@@ -112,7 +112,8 @@ public class PhenotypeData  implements Cloneable{
     public PhenotypeData(String oboFilePath, String annotationFilePath) throws IOException{
         
         // build oboParser object for the input ontology file
-        OBOParser oboParser = new OBOParser(new OBOParserFileInput(oboFilePath));
+        // OBOParser oboParser = new OBOParser(new OBOParserFileInput(oboFilePath));
+        OBOParser oboParser = new OBOParser(oboFilePath);
         
         // parse obo file
         try {
@@ -371,10 +372,15 @@ public class PhenotypeData  implements Cloneable{
                     String firstLine = in.readLine();
                     boolean isHpo = false;
                     boolean isUpheno = false;
+                    // updated annotation format since 2019 for genes_to_phenotype.txt file according to https://hpo.jax.org/app/download/annotation
+                    boolean isHpoa = false;
+                    
                     if (firstLine.startsWith("#Entrez Gene ID of human gene ; Gene symbol ; Annotated Uberpheno")) {
                             isUpheno = true;
                     } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-Name<tab>HPO-Ter")) {
                             isHpo = true;
+                    } else if (firstLine.startsWith("#Format: entrez-gene-id<tab>entrez-gene-symbol<tab>HPO-Term-ID<tab>HPO-Term-Name<tab>Frequency-Raw<tab>Frequency-HPO")) {
+                            isHpoa = true;
                     } else {
                             throw new RuntimeException("Can't handle annotation-file format!");
                     }
@@ -403,6 +409,11 @@ public class PhenotypeData  implements Cloneable{
                                     split = tabstopp.split(line);
                                     entrezId = split[0];
                                     annotatedTermId = split[3];
+                            }
+                            if (isHpoa) {
+                                    split = tabstopp.split(line);
+                                    entrezId = split[0];
+                                    annotatedTermId = split[2];
                             }
 
                             Term t = getOntology().getTermIncludingAlternatives(annotatedTermId);
