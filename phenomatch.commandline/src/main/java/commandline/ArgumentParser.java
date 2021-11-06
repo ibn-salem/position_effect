@@ -29,7 +29,7 @@ public class ArgumentParser {
                         + "phenotypes associated to individuals.")
                 .epilog("2014 by Jonas Ibn-Salem <j.ibn-salem@uni-mainz.de>")
                 .defaultHelp(true)
-                .version("${prog} 0.0.1");    
+                .version("${prog} 0.0.2");    
         //TODO remove hard-coded version. e.g. by this approach:http://stackoverflow.com/questions/2469922/generate-a-version-java-file-in-maven
         
         argsParser.addArgument("-i", "--input-file").required(true)
